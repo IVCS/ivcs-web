@@ -13,8 +13,6 @@ Text chat
 
 Image editing
 
-End-to-end encryption 
-
 ### Tech Stack 
 
 Node.js 
@@ -26,5 +24,3 @@ MongoDB
 Socket.IO 
 
 WebRTC 
-
-Docker 
