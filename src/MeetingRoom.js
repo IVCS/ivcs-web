@@ -76,10 +76,8 @@ class MeetingRoom extends React.Component {
 
   getRemoteMedia = async () => {
     // once remote stream arrives, show it in the remote video element
-    this.rtcPeerConn.ontrack = (e) => {
-      console.log('this remote video should be work');
-      this.updateSignalLog('going to add remote stream...');
-      this.remoteVideoRef.srcObject = e.stream[0];
+    this.rtcPeerConn.onaddstream = (e) => {
+      this.remoteVideoRef.current.srcObject = e.stream;
     };
   }
 
@@ -107,8 +105,8 @@ class MeetingRoom extends React.Component {
     if (signal.username !== this.state.username) {
       if (signal.type === 'SDP') {
         this.updateSignalLog('<br>Logging SDP<br>');
-        console.log('signal.username: ', signal.username);
-        console.log('this.username: ', this.state.username);
+        // console.log('signal.username: ', signal.username);
+        // console.log('this.username: ', this.state.username);
         this.rtcPeerConn
             .setRemoteDescription(new RTCSessionDescription(signal.message))
             .then(() => {
@@ -116,19 +114,15 @@ class MeetingRoom extends React.Component {
                 this.rtcPeerConn.createAnswer()
                     .then((description) => {
                       this.sendLocalDesc(description);
-                      this.updateSignalLog('<br>sending sdp answer<br>');
                     })
                     .catch((e) => console.log(e));
               }
-              this.getRemoteMedia()
-                  .catch((e)=>console.log(e));
             })
             .catch((e) => console.log(e));
       }
 
-      // TODO Fix "Error processing ICE candidate"
       if (signal.type === 'ICE') {
-        console.log(signal);
+        console.log('Received ice from server', signal);
         this.rtcPeerConn
             .addIceCandidate(new RTCIceCandidate(signal.message))
             .catch((e) => console.log(e));
@@ -151,6 +145,7 @@ class MeetingRoom extends React.Component {
               'type': 'ICE',
               'message': e.candidate,
               'roomName': this.roomName,
+              'username': this.state.username,
             }),
         );
       }
@@ -190,13 +185,16 @@ class MeetingRoom extends React.Component {
         .then((stream) => {
           this.sendSignalToServer();
           this.localVideoRef.current.srcObject = stream;
-          for (const track of stream.getTracks()) {
-            this.rtcPeerConn.addTrack(track);
-          }
+          // TODO: Change addStream to addTrack
+          this.rtcPeerConn.addStream(stream);
+        })
+        .then(() => {
+          this.getRemoteMedia().catch((e) => console.log(e));
         })
         .catch((e) => console.log(e));
   }
 
+  // TODO: Implement multi-user video conference function
   joinRoom = () => this.setState({video: true}, () =>{
     this.getLocalMedia()
         .then(() => this.connectServer())
