@@ -37,7 +37,7 @@ class MeetingLink extends React.Component {
       return this.substr(0, index) + replacement +
           this.substr(index + replacement.length);
     };
-    for (let i=0; i<str.length; i++) {
+    for (let i = 0; i < str.length; i++) {
       if (str[i] >= '0' && str[i] <= '9') {
         str = str.replaceAt(i, String.fromCharCode(str[i].charCodeAt(0) + 49));
       }
@@ -49,9 +49,10 @@ class MeetingLink extends React.Component {
   }
 
   johnMeeting = () => {
-    if (this.state.urlBackHalf === '') {
+    if (this.state.urlBackHalf !== '') {
+      // Join existing room
+    } else {
       const urlBackHalf = this.generateUrlBackHalf();
-      console.log(urlBackHalf);
       window.location.href = `/${urlBackHalf}`;
     }
   }
@@ -61,9 +62,9 @@ class MeetingLink extends React.Component {
     return (
       <Container className={classes.meetingLink}>
         <Typography component="p" className={classes.meetingLinkTitle}>
-          Start or join a meeting
+            Start or join a meeting
         </Typography>
-        <Button onClick={this.johnMeeting}>Click me</Button>
+        <Button onClick={this.johnMeeting}>Join Meeting</Button>
       </Container>
     );
   }
