@@ -151,6 +151,7 @@ class MeetingRoom extends React.Component {
               'type': 'ICE',
               'message': e.candidate,
               'roomName': this.roomName,
+              'username': this.state.username,
             }),
         );
       }
