@@ -41,11 +41,11 @@ const RTCIceServerConfig = {
     {
       urls: [
         'stun:stun1.l.google.com:19302',
-        'stun:stun2.l.google.com:19302',
+        // 'stun:stun2.l.google.com:19302',
       ],
     },
   ],
-  iceCandidatePoolSize: 10,
+  // iceCandidatePoolSize: 10,
 };
 
 class MeetingRoom extends React.Component {
@@ -55,9 +55,13 @@ class MeetingRoom extends React.Component {
     this.localVideoRef = React.createRef();
     this.remoteVideoRef = React.createRef();
 
-    this.roomName = window.location.pathname.substr(1);
+    this.roomId = window.location.pathname.substr(1);
     this.socket = null;
-    this.rtcPeerCoon = null;
+    this.rtcPeerConn = {};
+    this.userList = null;
+    this.userWhoSendMeOffer = [];
+
+    this.localStream = null;
 
     this.state = {
       video: false,
@@ -76,20 +80,33 @@ class MeetingRoom extends React.Component {
 
   getRemoteMedia = async () => {
     // once remote stream arrives, show it in the remote video element
-    this.rtcPeerConn.onaddstream = (e) => {
-      this.remoteVideoRef.current.srcObject = e.stream;
-    };
+    this.userList.forEach((user) => {
+      if (user === this.state.username) return;
+      this.rtcPeerConn[user].onaddstream = (e) => {
+        const videoArea = document.getElementById('video-area');
+        const video = document.createElement('video');
+        video.style.setProperty('display', 'block');
+        video.style.setProperty('margin', 'auto');
+        video.style.setProperty('margin-top', '30px');
+        video.style.setProperty('borderStyle', 'solid');
+        video.style.setProperty('width', '80%');
+        video.style.setProperty('height', '40%');
+        video.srcObject = e.stream;
+        video.autoplay = true;
+        videoArea.appendChild(video);
+      };
+    });
   }
 
-  sendLocalDesc = (description) => {
-    this.rtcPeerConn.setLocalDescription(description)
+  sendLocalDescription = (user, description) => {
+    this.rtcPeerConn[user].setLocalDescription(description)
         .then(() => {
           this.socket.emit(
               'signal from client',
               JSON.stringify({
                 'type': 'SDP',
-                'message': this.rtcPeerConn.localDescription,
-                'roomName': this.roomName,
+                'message': this.rtcPeerConn[user].localDescription,
+                'roomId': this.roomId,
                 'username': this.state.username,
               }),
           );
@@ -107,13 +124,15 @@ class MeetingRoom extends React.Component {
         this.updateSignalLog('<br>Logging SDP<br>');
         // console.log('signal.username: ', signal.username);
         // console.log('this.username: ', this.state.username);
-        this.rtcPeerConn
+        this.rtcPeerConn[signal.username]
             .setRemoteDescription(new RTCSessionDescription(signal.message))
             .then(() => {
+              // TODO: Fix "Failed to set remote answer sdp"
               if (signal.message.type === 'offer') {
-                this.rtcPeerConn.createAnswer()
+                this.userWhoSendMeOffer.push(signal.username);
+                this.rtcPeerConn[signal.username].createAnswer()
                     .then((description) => {
-                      this.sendLocalDesc(description);
+                      this.sendLocalDescription(signal.username, description);
                     })
                     .catch((e) => console.log(e));
               }
@@ -123,7 +142,7 @@ class MeetingRoom extends React.Component {
 
       if (signal.type === 'ICE') {
         console.log('Received ice from server', signal);
-        this.rtcPeerConn
+        this.rtcPeerConn[signal.username]
             .addIceCandidate(new RTCIceCandidate(signal.message))
             .catch((e) => console.log(e));
       }
@@ -133,44 +152,63 @@ class MeetingRoom extends React.Component {
   sendSignalToServer = () => {
     this.updateSignalLog('starting signaling...');
 
-    // Setup the RTC Peer Connection object
-    this.rtcPeerConn = new RTCPeerConnection(RTCIceServerConfig);
+    this.userList.forEach((user) => {
+      if (user === this.state.username) return;
+      if (this.rtcPeerConn[user] !== undefined) return;
 
-    // send any ice candidates to the other peer
-    this.rtcPeerConn.onicecandidate = (e) => {
-      if (e.candidate) {
-        this.socket.emit(
-            'signal from client',
-            JSON.stringify({
-              'type': 'ICE',
-              'message': e.candidate,
-              'roomName': this.roomName,
-              'username': this.state.username,
-            }),
-        );
-      }
-      this.updateSignalLog('completed that ice candidate...');
-    };
+      console.log('real users: ', user);
 
-    // let the 'negotiationneeded' event trigger offer generation
-    this.rtcPeerConn.onnegotiationneeded = () => {
-      this.updateSignalLog('on negotiation called');
-      this.updateSignalLog('sending SDP offer');
-      this.rtcPeerConn.createOffer()
-          .then((description) => {
-            this.sendLocalDesc(description);
-          })
-          .catch((e)=>console.log(e));
-    };
+      // Setup the RTC Peer Connection object
+      this.rtcPeerConn[user] = new RTCPeerConnection(RTCIceServerConfig);
+
+      // send any ice candidates to the other peer
+      this.rtcPeerConn[user].onicecandidate = (e) => {
+        if (e.candidate) {
+          this.socket.emit(
+              'signal from client',
+              JSON.stringify({
+                'type': 'ICE',
+                'message': e.candidate,
+                'roomId': this.roomId,
+                'username': this.state.username,
+              }),
+          );
+        }
+        this.updateSignalLog('completed that ice candidate...');
+      };
+
+      // let the 'negotiationneeded' event trigger offer generation
+      if (this.userWhoSendMeOffer.includes(user)) return;
+
+      this.rtcPeerConn[user].onnegotiationneeded = () => {
+        this.updateSignalLog('on negotiation called');
+        this.updateSignalLog('sending SDP offer');
+        this.rtcPeerConn[user].createOffer()
+            .then((description) => {
+              this.sendLocalDescription(user, description);
+            })
+            .catch((e) => console.log(e));
+      };
+    });
   }
 
   connectServer = () => {
     this.socket = io(signalingServerUrl);
 
-    this.socket.emit('join room', this.roomName, this.state.username);
+    this.socket.emit('join room', this.roomId, this.state.username);
 
-    this.socket.on('user joined', (msg) => {
-      this.updateSignalLog(msg);
+    this.socket.on('user joined', (currentUser, userList) => {
+      this.updateSignalLog(`${currentUser} has joined the ${this.roomId} room`);
+      console.log('get user joined msg');
+      console.log(userList);
+      this.userList = userList;
+      this.sendSignalToServer();
+      this.getRemoteMedia().catch((e) => console.log(e));
+      // TODO: Change addStream to addTrack
+      this.userList.forEach((user) => {
+        if (user === this.state.username) return;
+        this.rtcPeerConn[user].addStream(this.localStream);
+      });
     });
 
     this.socket.on('signal from server', (data) => {
@@ -183,22 +221,17 @@ class MeetingRoom extends React.Component {
     await navigator.mediaDevices
         .getUserMedia({video: this.state.video})
         .then((stream) => {
-          this.sendSignalToServer();
           this.localVideoRef.current.srcObject = stream;
-          // TODO: Change addStream to addTrack
-          this.rtcPeerConn.addStream(stream);
-        })
-        .then(() => {
-          this.getRemoteMedia().catch((e) => console.log(e));
+          this.localStream = stream;
         })
         .catch((e) => console.log(e));
   }
 
   // TODO: Implement multi-user video conference function
-  joinRoom = () => this.setState({video: true}, () =>{
+  joinRoom = () => this.setState({video: true}, () => {
     this.getLocalMedia()
         .then(() => this.connectServer())
-        .catch((e)=>console.log(e));
+        .catch((e) => console.log(e));
   });
 
   render() {
@@ -206,32 +239,29 @@ class MeetingRoom extends React.Component {
     return (
       <Container className={classes.meetingRoom}>
         <Typography align="center" color="primary" variant="h2">
-          test
+            test
         </Typography>
 
         <Container className={classes.joinNowContainer}>
           <Input
-            onChange={(e)=>this.changeUsername(e)}
+            onChange={(e) => this.changeUsername(e)}
             placeholder="username"
             value={this.state.username}
           />
           <Button variant="outlined" color="primary" onClick={this.joinRoom}
             className={classes.joinNowButton}>
-          Join Now
+              Join Now
           </Button>
         </Container>
 
-        <Typography variant="h6" id="log">
-          log:
-        </Typography>
-
         <video ref={this.localVideoRef} className={classes.video} autoPlay>
         </video>
-        <video ref={this.remoteVideoRef} className={classes.video} autoPlay>
-        </video>
+
+        <div id="video-area">
+        </div>
 
         <Typography variant="h6" id="signal-log">
-          signal log:
+            signal log:
         </Typography>
       </Container>
     );

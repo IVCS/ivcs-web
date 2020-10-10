@@ -20,10 +20,10 @@ const styles = () => ({
 });
 
 class HomePage extends React.Component {
-  constructor(props) {
-    super(props);
-    // this.state = {url: ''};
-  }
+  // constructor(props) {
+  //   super(props);
+  //   // this.state = {url: ''};
+  // }
 
   render() {
     const {classes} = this.props;

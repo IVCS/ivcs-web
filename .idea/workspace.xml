@@ -20,13 +20,17 @@
       <path>
         <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
         <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
-        <item name="BRANCH:dev" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="BRANCH:multi-user" type="e8cecc67:BranchNodeDescriptor" />
       </path>
     </select>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="98d3a263-4a84-4b20-a0db-d2d51aee3bfe" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/HomePage.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/HomePage.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/MeetingRoom.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/MeetingRoom.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -106,7 +110,7 @@
       <workItem from="1601898765457" duration="6262000" />
       <workItem from="1601913759573" duration="7406000" />
       <workItem from="1601944215363" duration="1328000" />
-      <workItem from="1602328560783" duration="433000" />
+      <workItem from="1602328560783" duration="18860000" />
     </task>
     <task id="LOCAL-00001" summary="Update README.md">
       <created>1601914784873</created>
@@ -171,7 +175,14 @@
       <option name="project" value="LOCAL" />
       <updated>1601945444707</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Create multi-user branch">
+      <created>1602329382904</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1602329382904</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -188,7 +199,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="dev" />
+                        <option value="multi-user" />
                       </list>
                     </value>
                   </entry>
@@ -211,7 +222,8 @@
     <MESSAGE value="Update index.js" />
     <MESSAGE value="Update index.html" />
     <MESSAGE value="Update package.json" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update package.json" />
+    <MESSAGE value="Create multi-user branch" />
+    <option name="LAST_COMMIT_MESSAGE" value="Create multi-user branch" />
   </component>
   <component name="WindowStateProjectService">
     <state x="593" y="-641" key="#ESLint" timestamp="1601905346544">
@@ -230,25 +242,25 @@
       <screen x="-229" y="-1080" width="1920" height="1080" />
     </state>
     <state x="155" y="-911" key="DiffContextDialog/0.0.1440.900/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1602178475465" />
-    <state width="1899" height="257" key="GridCell.Tab.0.bottom" timestamp="1602328859617">
+    <state width="1899" height="234" key="GridCell.Tab.0.bottom" timestamp="1602344849135">
       <screen x="-229" y="-1080" width="1920" height="1080" />
     </state>
-    <state width="1899" height="257" key="GridCell.Tab.0.bottom/0.0.1440.900/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1602328859617" />
+    <state width="1899" height="234" key="GridCell.Tab.0.bottom/0.0.1440.900/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1602344849135" />
     <state width="1899" height="305" key="GridCell.Tab.0.bottom/0.23.1440.795/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1601913806597" />
-    <state width="1899" height="257" key="GridCell.Tab.0.center" timestamp="1602328859615">
+    <state width="1899" height="234" key="GridCell.Tab.0.center" timestamp="1602344849133">
       <screen x="-229" y="-1080" width="1920" height="1080" />
     </state>
-    <state width="1899" height="257" key="GridCell.Tab.0.center/0.0.1440.900/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1602328859615" />
+    <state width="1899" height="234" key="GridCell.Tab.0.center/0.0.1440.900/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1602344849133" />
     <state width="1899" height="305" key="GridCell.Tab.0.center/0.23.1440.795/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1601913806586" />
-    <state width="1899" height="257" key="GridCell.Tab.0.left" timestamp="1602328859615">
+    <state width="1899" height="234" key="GridCell.Tab.0.left" timestamp="1602344849133">
       <screen x="-229" y="-1080" width="1920" height="1080" />
     </state>
-    <state width="1899" height="257" key="GridCell.Tab.0.left/0.0.1440.900/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1602328859615" />
+    <state width="1899" height="234" key="GridCell.Tab.0.left/0.0.1440.900/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1602344849133" />
     <state width="1899" height="305" key="GridCell.Tab.0.left/0.23.1440.795/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1601913806572" />
-    <state width="1899" height="257" key="GridCell.Tab.0.right" timestamp="1602328859616">
+    <state width="1899" height="234" key="GridCell.Tab.0.right" timestamp="1602344849134">
       <screen x="-229" y="-1080" width="1920" height="1080" />
     </state>
-    <state width="1899" height="257" key="GridCell.Tab.0.right/0.0.1440.900/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1602328859616" />
+    <state width="1899" height="234" key="GridCell.Tab.0.right/0.0.1440.900/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1602344849134" />
     <state width="1899" height="305" key="GridCell.Tab.0.right/0.23.1440.795/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1601913806591" />
     <state width="1899" height="376" key="GridCell.Tab.1.bottom" timestamp="1601923168544">
       <screen x="-229" y="-1080" width="1920" height="1080" />
@@ -310,18 +322,19 @@
       <screen x="-229" y="-1057" width="1920" height="1057" />
     </state>
     <state x="529" y="-619" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.23.1440.795/-229.-1057.1920.1057@-229.-1057.1920.1057" timestamp="1601633569491" />
-    <state x="485" y="-802" width="598" height="490" key="find.popup" timestamp="1601899841860">
+    <state x="460" y="-695" width="598" height="548" key="find.popup" timestamp="1602347990817">
       <screen x="-229" y="-1080" width="1920" height="1080" />
     </state>
+    <state x="460" y="-695" width="598" height="548" key="find.popup/0.0.1440.900/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1602347990817" />
     <state x="485" y="-802" width="598" height="490" key="find.popup/0.23.1440.877/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1601899841860" />
     <state x="515" y="-639" key="git4idea.ui.GitResetDialog" timestamp="1601914925224">
       <screen x="-229" y="-1080" width="1920" height="1080" />
     </state>
     <state x="515" y="-639" key="git4idea.ui.GitResetDialog/0.0.1440.900/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1601914925224" />
-    <state x="396" y="-839" width="670" height="676" key="search.everywhere.popup" timestamp="1601909575449">
+    <state x="396" y="-839" width="670" height="676" key="search.everywhere.popup" timestamp="1602356631997">
       <screen x="-229" y="-1080" width="1920" height="1080" />
     </state>
-    <state x="396" y="-839" width="670" height="676" key="search.everywhere.popup/0.0.1440.900/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1601909575449" />
+    <state x="396" y="-839" width="670" height="676" key="search.everywhere.popup/0.0.1440.900/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1602356631997" />
     <state x="396" y="-839" width="670" height="676" key="search.everywhere.popup/0.23.1440.877/-229.-1080.1920.1080@-229.-1080.1920.1080" timestamp="1601633293029" />
   </component>
 </project>
