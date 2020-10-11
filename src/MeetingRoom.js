@@ -36,17 +36,17 @@ const styles = () => ({
 
 const signalingServerUrl = 'http://127.0.0.1:3001';
 
-const RTCIceServerConfig = {
-  iceServers: [
-    {
-      urls: [
-        'stun:stun1.l.google.com:19302',
-        // 'stun:stun2.l.google.com:19302',
-      ],
-    },
-  ],
-  // iceCandidatePoolSize: 10,
-};
+// const RTCIceServerConfig = {
+//   iceServers: [
+//     {
+//       urls: [
+//         'stun:stun1.l.google.com:19302',
+//         // 'stun:stun2.l.google.com:19302',
+//       ],
+//     },
+//   ],
+//   // iceCandidatePoolSize: 10,
+// };
 
 class MeetingRoom extends React.Component {
   constructor(props) {
@@ -124,27 +124,32 @@ class MeetingRoom extends React.Component {
         this.updateSignalLog('<br>Logging SDP<br>');
         // console.log('signal.username: ', signal.username);
         // console.log('this.username: ', this.state.username);
-        this.rtcPeerConn[signal.username]
-            .setRemoteDescription(new RTCSessionDescription(signal.message))
-            .then(() => {
-              // TODO: Fix "Failed to set remote answer sdp"
-              if (signal.message.type === 'offer') {
-                this.userWhoSendMeOffer.push(signal.username);
-                this.rtcPeerConn[signal.username].createAnswer()
-                    .then((description) => {
-                      this.sendLocalDescription(signal.username, description);
-                    })
-                    .catch((e) => console.log(e));
-              }
-            })
-            .catch((e) => console.log(e));
+
+        if (signal.message) {
+          console.log('Received sdp msg from server', signal);
+          if (signal.message.type === 'offer') {
+            this.userWhoSendMeOffer.push(signal.username);
+            this.rtcPeerConn[signal.username]
+                .setRemoteDescription(new RTCSessionDescription(signal.message))
+                .then(() => {
+                  this.rtcPeerConn[signal.username].createAnswer()
+                      .then((description) => {
+                        this.sendLocalDescription(signal.username, description);
+                      })
+                      .catch((e) => console.log(e));
+                })
+                .catch((e) => console.log(e));
+          }
+        }
       }
 
       if (signal.type === 'ICE') {
-        console.log('Received ice from server', signal);
+        // console.log('Received ice from server', signal);
         this.rtcPeerConn[signal.username]
             .addIceCandidate(new RTCIceCandidate(signal.message))
-            .catch((e) => console.log(e));
+            .catch((e) => console.log(
+                'Error adding received ice candidate', e),
+            );
       }
     }
   }
@@ -156,10 +161,15 @@ class MeetingRoom extends React.Component {
       if (user === this.state.username) return;
       if (this.rtcPeerConn[user] !== undefined) return;
 
-      console.log('real users: ', user);
+      // console.log('real users: ', user);
 
       // Setup the RTC Peer Connection object
+      const RTCIceServerConfig = {
+        'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}],
+      };
       this.rtcPeerConn[user] = new RTCPeerConnection(RTCIceServerConfig);
+
+      console.log('rtcpeerconn number: ', this.rtcPeerConn);
 
       // send any ice candidates to the other peer
       this.rtcPeerConn[user].onicecandidate = (e) => {
@@ -197,6 +207,10 @@ class MeetingRoom extends React.Component {
 
     this.socket.emit('join room', this.roomId, this.state.username);
 
+    this.socket.on('signal from server', (data) => {
+      this.receiveSignalFromServer(data);
+    });
+
     this.socket.on('user joined', (currentUser, userList) => {
       this.updateSignalLog(`${currentUser} has joined the ${this.roomId} room`);
       console.log('get user joined msg');
@@ -209,10 +223,6 @@ class MeetingRoom extends React.Component {
         if (user === this.state.username) return;
         this.rtcPeerConn[user].addStream(this.localStream);
       });
-    });
-
-    this.socket.on('signal from server', (data) => {
-      this.receiveSignalFromServer(data);
     });
   }
 
