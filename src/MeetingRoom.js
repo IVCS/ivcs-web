@@ -37,27 +37,22 @@ const styles = () => ({
 const signalingServerUrl = 'http://127.0.0.1:3001';
 
 const RTCIceServerConfig = {
-  'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}],
+  iceServers: [
+    {
+      urls: [
+        'stun:stun1.l.google.com:19302',
+        'stun:stun2.l.google.com:19302',
+      ],
+    },
+  ],
+  iceCandidatePoolSize: 10,
 };
-
-// const RTCIceServerConfig = {
-//   iceServers: [
-//     {
-//       urls: [
-//         'stun:stun1.l.google.com:19302',
-//         // 'stun:stun2.l.google.com:19302',
-//       ],
-//     },
-//   ],
-//   // iceCandidatePoolSize: 10,
-// };
 
 class MeetingRoom extends React.Component {
   constructor(props) {
     super(props);
 
     this.localVideoRef = React.createRef();
-    this.remoteVideoRef = React.createRef();
 
     this.roomId = window.location.pathname.substr(1);
     this.socket = null;
@@ -272,7 +267,6 @@ class MeetingRoom extends React.Component {
         .catch((e) => console.log(e));
   }
 
-  // TODO: Implement multi-user video conference function
   joinRoom = () => this.setState({video: true}, () => {
     this.getLocalMedia()
         .then(() => this.connectServer())
