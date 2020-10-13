@@ -53,27 +53,19 @@ class MeetingRoom extends React.Component {
     super(props);
 
     this.localVideoRef = React.createRef();
+    this.localStream = null;
 
     this.roomId = window.location.pathname.substr(1);
     this.socket = null;
     this.rtcPeerConn = {};
     this.userList = [];
     this.userId = null;
-    this.userWhoGotOffer = [];
-
-    this.localStream = null;
 
     this.state = {
       video: false,
       audio: false,
       username: faker.internet.userName(),
     };
-  }
-
-  updateSignalLog = (message) => {
-    document.getElementById('signal-log').innerHTML =
-        document.getElementById('signal-log').innerHTML +
-        '<br>' + message;
   }
 
   changeUsername = (e) => this.setState({username: e.target.value});
@@ -120,32 +112,15 @@ class MeetingRoom extends React.Component {
   receiveSignalFromServer = (data) => {
     const signal = JSON.parse(data);
 
-    this.updateSignalLog(`Signal received: ${signal.type}`);
-
-    console.log('Got signal from server', signal);
-    console.log('from user: ', signal.username);
-
     if (signal.type === 'SDP') {
-      this.updateSignalLog('<br>Logging SDP<br>');
-
       if (signal.message) {
-        if (signal.message.type === 'answer') {
-          console.log('Got sdp answer from user: ', signal.srcUserId);
-          console.log('Sdp answer content: ', signal);
-        }
         this.rtcPeerConn[signal.srcUserId]
             .setRemoteDescription(new RTCSessionDescription(signal.message))
             .then(() => {
-              console.log('set remote description success');
-              console.log('RTC peer connection list: ', this.rtcPeerConn);
               if (signal.message.type === 'offer') {
-                console.log('Got sdp offer from user: ', signal.srcUserId);
-                console.log('Sdp offer content: ', signal);
                 this.rtcPeerConn[signal.srcUserId].createAnswer()
                     .then((description) => {
                       this.sendLocalDescription(signal.srcUserId, description);
-                      console
-                          .log('Sent sdp answer to user: ', signal.srcUserId);
                     })
                     .catch((e) => console.log(e));
               }
@@ -165,11 +140,8 @@ class MeetingRoom extends React.Component {
   }
 
   sendSignalToServer = () => {
-    this.updateSignalLog('starting signaling...');
-
     this.userList.forEach((user) => {
       const userId = user.userId;
-      const username = user.username;
       const lastUserId = this.userList[this.userList.length-1].userId;
 
       if (userId === this.userId) return;
@@ -177,13 +149,9 @@ class MeetingRoom extends React.Component {
 
       // Setup the RTC Peer Connection object
       this.rtcPeerConn[userId] = new RTCPeerConnection(RTCIceServerConfig);
-      console.log('RTC peer connection at start: ', this.rtcPeerConn);
-      console.log('user name in send signal function: ', username);
 
       // Send any ice candidates to the other peer
-      console.log('traverse user in send signal function: ', userId, username);
       this.rtcPeerConn[userId].onicecandidate = (event) => {
-        console.log('event candidate: ', event.candidate);
         if (event.candidate) {
           this.socket.emit(
               'signal from client',
@@ -196,23 +164,14 @@ class MeetingRoom extends React.Component {
               }),
           );
         }
-        console.log('send ice to user: ', userId);
-        this.updateSignalLog('completed that ice candidate...');
       };
 
       // Send sdp offer
       if (lastUserId !== this.userId) return;
-      if (this.userWhoGotOffer.includes(userId)) return;
-      this.updateSignalLog(`send SDP offer to user ${username}`);
-
       this.rtcPeerConn[userId].onnegotiationneeded = () => {
-        this.updateSignalLog('on negotiation called');
-        this.updateSignalLog('sending SDP offer');
         this.rtcPeerConn[userId].createOffer()
             .then((description) => {
               this.sendLocalDescription(userId, description);
-              console.log('sent sdp offer to user: ', username);
-              this.userWhoGotOffer.push(userId);
             })
             .catch((e) => console.log(e));
       };
@@ -234,9 +193,6 @@ class MeetingRoom extends React.Component {
 
       this.socket.on('user joined',
           (joinedUserId, joinedUserName, userList) => {
-            this.updateSignalLog(
-                `${joinedUserName} has joined the ${this.roomId} room`);
-
             this.userList = userList;
 
             this.sendSignalToServer();
@@ -278,7 +234,7 @@ class MeetingRoom extends React.Component {
     return (
       <Container className={classes.meetingRoom}>
         <Typography align="center" color="primary" variant="h2">
-            test
+            IVCS
         </Typography>
 
         <Container className={classes.joinNowContainer}>
@@ -298,10 +254,6 @@ class MeetingRoom extends React.Component {
 
         <div id="video-area">
         </div>
-
-        <Typography variant="h6" id="signal-log">
-            signal log:
-        </Typography>
       </Container>
     );
   }
