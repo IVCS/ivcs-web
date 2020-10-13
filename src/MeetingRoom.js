@@ -3,6 +3,7 @@ import Input from '@material-ui/core/Input';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
+import VideoBoxManager from './VideoBoxManager';
 import faker from 'faker';
 import withStyles from '@material-ui/styles/withStyles';
 import io from 'socket.io-client';
@@ -22,15 +23,6 @@ const styles = () => ({
   joinNowButton: {
     // display: 'block',
     margin: 'auto',
-  },
-  video: {
-    display: 'block',
-    margin: 'auto',
-    marginTop: '30px',
-    borderStyle: 'solid',
-    borderColor: '#4a4646',
-    width: '80%',
-    height: '40%',
   },
 });
 
@@ -52,8 +44,8 @@ class MeetingRoom extends React.Component {
   constructor(props) {
     super(props);
 
-    this.localVideoRef = React.createRef();
     this.localStream = null;
+    this.videoBoxManagerRef = React.createRef();
 
     this.roomId = window.location.pathname.substr(1);
     this.socket = null;
@@ -75,19 +67,8 @@ class MeetingRoom extends React.Component {
     this.userList.forEach((user) => {
       const userId = user.userId;
       if (userId === this.userId) return;
-      this.rtcPeerConn[userId].onaddstream = (e) => {
-        // console.log('get remote video from: ', user);
-        const videoArea = document.getElementById('video-area');
-        const video = document.createElement('video');
-        video.style.setProperty('display', 'block');
-        video.style.setProperty('margin', 'auto');
-        video.style.setProperty('margin-top', '30px');
-        video.style.setProperty('borderStyle', 'solid');
-        video.style.setProperty('width', '80%');
-        video.style.setProperty('height', '40%');
-        video.srcObject = e.stream;
-        video.autoplay = true;
-        videoArea.appendChild(video);
+      this.rtcPeerConn[userId].onaddstream = (event) => {
+        this.videoBoxManagerRef.current.updateMediaStream(userId, event.stream);
       };
     });
   }
@@ -184,6 +165,9 @@ class MeetingRoom extends React.Component {
     this.socket.on('connect', () => {
       this.userId = this.socket.id;
 
+      this.videoBoxManagerRef.current
+          .updateMediaStream(this.userId, this.localStream);
+
       this.socket.emit('join room',
           this.roomId, this.userId, this.state.username);
 
@@ -217,7 +201,6 @@ class MeetingRoom extends React.Component {
     await navigator.mediaDevices
         .getUserMedia({video: this.state.video})
         .then((stream) => {
-          this.localVideoRef.current.srcObject = stream;
           this.localStream = stream;
         })
         .catch((e) => console.log(e));
@@ -233,6 +216,7 @@ class MeetingRoom extends React.Component {
     const {classes} = this.props;
     return (
       <Container className={classes.meetingRoom}>
+
         <Typography align="center" color="primary" variant="h2">
             IVCS
         </Typography>
@@ -249,11 +233,8 @@ class MeetingRoom extends React.Component {
           </Button>
         </Container>
 
-        <video ref={this.localVideoRef} className={classes.video} autoPlay>
-        </video>
+        <VideoBoxManager ref={this.videoBoxManagerRef} />
 
-        <div id="video-area">
-        </div>
       </Container>
     );
   }
