@@ -36,6 +36,10 @@ const styles = () => ({
 
 const signalingServerUrl = 'http://127.0.0.1:3001';
 
+const RTCIceServerConfig = {
+  'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}],
+};
+
 // const RTCIceServerConfig = {
 //   iceServers: [
 //     {
@@ -58,8 +62,9 @@ class MeetingRoom extends React.Component {
     this.roomId = window.location.pathname.substr(1);
     this.socket = null;
     this.rtcPeerConn = {};
-    this.userList = null;
-    this.userWhoSendMeOffer = [];
+    this.userList = [];
+    this.userId = null;
+    this.userWhoGotOffer = [];
 
     this.localStream = null;
 
@@ -81,8 +86,10 @@ class MeetingRoom extends React.Component {
   getRemoteMedia = async () => {
     // once remote stream arrives, show it in the remote video element
     this.userList.forEach((user) => {
-      if (user === this.state.username) return;
-      this.rtcPeerConn[user].onaddstream = (e) => {
+      const userId = user.userId;
+      if (userId === this.userId) return;
+      this.rtcPeerConn[userId].onaddstream = (e) => {
+        // console.log('get remote video from: ', user);
         const videoArea = document.getElementById('video-area');
         const video = document.createElement('video');
         video.style.setProperty('display', 'block');
@@ -98,15 +105,16 @@ class MeetingRoom extends React.Component {
     });
   }
 
-  sendLocalDescription = (user, description) => {
-    this.rtcPeerConn[user].setLocalDescription(description)
+  sendLocalDescription = (userId, description) => {
+    this.rtcPeerConn[userId].setLocalDescription(description)
         .then(() => {
           this.socket.emit(
               'signal from client',
               JSON.stringify({
                 'type': 'SDP',
-                'message': this.rtcPeerConn[user].localDescription,
-                'roomId': this.roomId,
+                'message': this.rtcPeerConn[userId].localDescription,
+                'srcUserId': this.userId,
+                'destUserId': userId,
                 'username': this.state.username,
               }),
           );
@@ -119,38 +127,45 @@ class MeetingRoom extends React.Component {
 
     this.updateSignalLog(`Signal received: ${signal.type}`);
 
-    if (signal.username !== this.state.username) {
-      if (signal.type === 'SDP') {
-        this.updateSignalLog('<br>Logging SDP<br>');
-        // console.log('signal.username: ', signal.username);
-        // console.log('this.username: ', this.state.username);
+    console.log('Got signal from server', signal);
+    console.log('from user: ', signal.username);
 
-        if (signal.message) {
-          console.log('Received sdp msg from server', signal);
-          if (signal.message.type === 'offer') {
-            this.userWhoSendMeOffer.push(signal.username);
-            this.rtcPeerConn[signal.username]
-                .setRemoteDescription(new RTCSessionDescription(signal.message))
-                .then(() => {
-                  this.rtcPeerConn[signal.username].createAnswer()
-                      .then((description) => {
-                        this.sendLocalDescription(signal.username, description);
-                      })
-                      .catch((e) => console.log(e));
-                })
-                .catch((e) => console.log(e));
-          }
+    if (signal.type === 'SDP') {
+      this.updateSignalLog('<br>Logging SDP<br>');
+
+      if (signal.message) {
+        if (signal.message.type === 'answer') {
+          console.log('Got sdp answer from user: ', signal.srcUserId);
+          console.log('Sdp answer content: ', signal);
         }
+        this.rtcPeerConn[signal.srcUserId]
+            .setRemoteDescription(new RTCSessionDescription(signal.message))
+            .then(() => {
+              console.log('set remote description success');
+              console.log('RTC peer connection list: ', this.rtcPeerConn);
+              if (signal.message.type === 'offer') {
+                console.log('Got sdp offer from user: ', signal.srcUserId);
+                console.log('Sdp offer content: ', signal);
+                this.rtcPeerConn[signal.srcUserId].createAnswer()
+                    .then((description) => {
+                      this.sendLocalDescription(signal.srcUserId, description);
+                      console
+                          .log('Sent sdp answer to user: ', signal.srcUserId);
+                    })
+                    .catch((e) => console.log(e));
+              }
+            })
+            .catch((e) => console.log(e));
       }
+    }
 
-      if (signal.type === 'ICE') {
-        // console.log('Received ice from server', signal);
-        this.rtcPeerConn[signal.username]
-            .addIceCandidate(new RTCIceCandidate(signal.message))
-            .catch((e) => console.log(
-                'Error adding received ice candidate', e),
-            );
-      }
+    if (signal.type === 'ICE') {
+      console.log('received ice from user: ', signal.srcUserId);
+      this.rtcPeerConn[signal.srcUserId]
+          .addIceCandidate(new RTCIceCandidate(signal.message))
+          .catch((e) => console.log(
+              'Error adding received ice candidate', e),
+          );
     }
   }
 
@@ -158,44 +173,51 @@ class MeetingRoom extends React.Component {
     this.updateSignalLog('starting signaling...');
 
     this.userList.forEach((user) => {
-      if (user === this.state.username) return;
-      if (this.rtcPeerConn[user] !== undefined) return;
+      const userId = user.userId;
+      const username = user.username;
+      const lastUserId = this.userList[this.userList.length-1].userId;
 
-      // console.log('real users: ', user);
+      if (userId === this.userId) return;
+      if (this.rtcPeerConn[userId] !== undefined) return;
 
       // Setup the RTC Peer Connection object
-      const RTCIceServerConfig = {
-        'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}],
-      };
-      this.rtcPeerConn[user] = new RTCPeerConnection(RTCIceServerConfig);
+      this.rtcPeerConn[userId] = new RTCPeerConnection(RTCIceServerConfig);
+      console.log('RTC peer connection at start: ', this.rtcPeerConn);
+      console.log('user name in send signal function: ', username);
 
-      console.log('rtcpeerconn number: ', this.rtcPeerConn);
-
-      // send any ice candidates to the other peer
-      this.rtcPeerConn[user].onicecandidate = (e) => {
-        if (e.candidate) {
+      // Send any ice candidates to the other peer
+      console.log('traverse user in send signal function: ', userId, username);
+      this.rtcPeerConn[userId].onicecandidate = (event) => {
+        console.log('event candidate: ', event.candidate);
+        if (event.candidate) {
           this.socket.emit(
               'signal from client',
               JSON.stringify({
                 'type': 'ICE',
-                'message': e.candidate,
-                'roomId': this.roomId,
+                'message': event.candidate,
+                'srcUserId': this.userId,
+                'destUserId': userId,
                 'username': this.state.username,
               }),
           );
         }
+        console.log('send ice to user: ', userId);
         this.updateSignalLog('completed that ice candidate...');
       };
 
-      // let the 'negotiationneeded' event trigger offer generation
-      if (this.userWhoSendMeOffer.includes(user)) return;
+      // Send sdp offer
+      if (lastUserId !== this.userId) return;
+      if (this.userWhoGotOffer.includes(userId)) return;
+      this.updateSignalLog(`send SDP offer to user ${username}`);
 
-      this.rtcPeerConn[user].onnegotiationneeded = () => {
+      this.rtcPeerConn[userId].onnegotiationneeded = () => {
         this.updateSignalLog('on negotiation called');
         this.updateSignalLog('sending SDP offer');
-        this.rtcPeerConn[user].createOffer()
+        this.rtcPeerConn[userId].createOffer()
             .then((description) => {
-              this.sendLocalDescription(user, description);
+              this.sendLocalDescription(userId, description);
+              console.log('sent sdp offer to user: ', username);
+              this.userWhoGotOffer.push(userId);
             })
             .catch((e) => console.log(e));
       };
@@ -205,24 +227,37 @@ class MeetingRoom extends React.Component {
   connectServer = () => {
     this.socket = io(signalingServerUrl);
 
-    this.socket.emit('join room', this.roomId, this.state.username);
+    this.socket.on('connect', () => {
+      this.userId = this.socket.id;
 
-    this.socket.on('signal from server', (data) => {
-      this.receiveSignalFromServer(data);
-    });
+      this.socket.emit('join room',
+          this.roomId, this.userId, this.state.username);
 
-    this.socket.on('user joined', (currentUser, userList) => {
-      this.updateSignalLog(`${currentUser} has joined the ${this.roomId} room`);
-      console.log('get user joined msg');
-      console.log(userList);
-      this.userList = userList;
-      this.sendSignalToServer();
-      this.getRemoteMedia().catch((e) => console.log(e));
-      // TODO: Change addStream to addTrack
-      this.userList.forEach((user) => {
-        if (user === this.state.username) return;
-        this.rtcPeerConn[user].addStream(this.localStream);
+      this.socket.on('signal from server', (data) => {
+        this.receiveSignalFromServer(data);
       });
+
+      this.socket.on('user joined',
+          (joinedUserId, joinedUserName, userList) => {
+            this.updateSignalLog(
+                `${joinedUserName} has joined the ${this.roomId} room`);
+
+            this.userList = userList;
+
+            this.sendSignalToServer();
+
+            this.getRemoteMedia().catch((e) => console.log(e));
+
+            // TODO: Change addStream to addTrack
+            this.userList.forEach((user) => {
+              const userId = user.userId;
+              if (userId === this.userId) return;
+              this.rtcPeerConn[userId].addStream(this.localStream);
+              // for (const track of this.localStream.getTracks()) {
+              //   this.rtcPeerConn[userId].addTrack(track, this.localStream);
+              // }
+            });
+          });
     });
   }
 
