@@ -123,7 +123,7 @@ class MeetingRoom extends React.Component {
   sendSignalToServer = () => {
     this.userList.forEach((user) => {
       const userId = user.userId;
-      const lastUserId = this.userList[this.userList.length-1].userId;
+      const lastUserId = this.userList[this.userList.length - 1].userId;
 
       if (userId === this.userId) return;
       if (this.rtcPeerConn[userId] !== undefined) return;
@@ -183,15 +183,21 @@ class MeetingRoom extends React.Component {
 
             this.getRemoteMedia().catch((e) => console.log(e));
 
-            // TODO: Change addStream to addTrack
-            this.userList.forEach((user) => {
-              const userId = user.userId;
-              if (userId === this.userId) return;
-              this.rtcPeerConn[userId].addStream(this.localStream);
-              // for (const track of this.localStream.getTracks()) {
-              //   this.rtcPeerConn[userId].addTrack(track, this.localStream);
-              // }
-            });
+            const lastUserId = this.userList[this.userList.length - 1].userId;
+            if (lastUserId === this.userId) {
+              this.userList.forEach((user) => {
+                const userId = user.userId;
+                if (userId === this.userId) return;
+
+                for (const track of this.localStream.getTracks()) {
+                  this.rtcPeerConn[userId].addTrack(track, this.localStream);
+                }
+              });
+            } else {
+              for (const track of this.localStream.getTracks()) {
+                this.rtcPeerConn[lastUserId].addTrack(track, this.localStream);
+              }
+            }
           });
     });
   }
@@ -233,7 +239,7 @@ class MeetingRoom extends React.Component {
           </Button>
         </Container>
 
-        <VideoBoxManager ref={this.videoBoxManagerRef} />
+        <VideoBoxManager ref={this.videoBoxManagerRef}/>
 
       </Container>
     );
