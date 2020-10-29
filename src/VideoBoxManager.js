@@ -5,17 +5,21 @@ import {Container} from '@material-ui/core';
 
 const styles = () => ({
   videoBoxManager: {
-    width: '100%',
-    height: '100%',
+    display: 'flex',
+    flexFlow: 'row wrap',
+    justifyContent: 'space-around',
+    padding: 0,
+    margin: 0,
+    listStyle: 'none',
   },
   videoBox: {
-    display: 'block',
-    margin: 'auto',
-    marginTop: '30px',
-    borderStyle: 'solid',
-    borderColor: '#6fd2a0',
-    width: '80%',
-    height: '40%',
+    background: 'tomato',
+    padding: '5px',
+    width: '200px',
+    height: '150',
+    marginTop: '10px',
+    lineHeight: '150px',
+    textAlign: 'center',
   },
 });
 
@@ -31,7 +35,7 @@ class VideoBoxManager extends React.Component {
   }
 
   updateMediaStream = (userId, mediaStream) => {
-    console.log('userid, media stream:', userId, mediaStream);
+    // console.log('userid, media stream:', userId, mediaStream);
     this.videoRefs[userId] = React.createRef();
     const video = document.createElement('video');
     video.className = this.classes.videoBox;
