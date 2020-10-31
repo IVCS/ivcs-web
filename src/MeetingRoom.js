@@ -68,7 +68,8 @@ class MeetingRoom extends React.Component {
       const userId = user.userId;
       if (userId === this.userId) return;
       this.rtcPeerConn[userId].onaddstream = (event) => {
-        this.videoBoxManagerRef.current.updateMediaStream(userId, event.stream);
+        console.log(event.stream.getTracks());
+        this.videoBoxManagerRef.current.newVideoBox(userId, event.stream);
       };
     });
   }
@@ -166,7 +167,7 @@ class MeetingRoom extends React.Component {
       this.userId = this.socket.id;
 
       this.videoBoxManagerRef.current
-          .updateMediaStream(this.userId, this.localStream);
+          .newVideoBox(this.userId, this.localStream);
 
       this.socket.emit('join room',
           this.roomId, this.userId, this.state.username);

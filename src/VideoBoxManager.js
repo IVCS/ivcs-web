@@ -1,7 +1,8 @@
 import React from 'react';
 import withStyles from '@material-ui/styles/withStyles';
 import PropTypes from 'prop-types';
-import {Container} from '@material-ui/core';
+import Container from '@material-ui/core/Container';
+import VideoBox from './VideoBox';
 
 const styles = () => ({
   videoBoxManager: {
@@ -12,51 +13,50 @@ const styles = () => ({
     margin: 0,
     listStyle: 'none',
   },
-  videoBox: {
-    background: 'tomato',
-    padding: '5px',
-    width: '200px',
-    height: '150',
-    marginTop: '10px',
-    lineHeight: '150px',
-    textAlign: 'center',
-  },
 });
 
 class VideoBoxManager extends React.Component {
   constructor(props) {
     super(props);
 
-    this.videoBoxManager = React.createRef();
-
-    this.videoRefs = {};
-
     this.classes = this.props.classes;
+
+    this.videoBoxRefs = {};
+
+    this.videoBoxes = [];
+
+    this.state = {
+      newVideoBox: false,
+    };
   }
 
-  updateMediaStream = (userId, mediaStream) => {
-    // console.log('userid, media stream:', userId, mediaStream);
-    this.videoRefs[userId] = React.createRef();
-    const video = document.createElement('video');
-    video.className = this.classes.videoBox;
-    video.ref = this.videoRefs[userId];
-    video.autoplay = true;
-    video.srcObject = mediaStream;
-    this.videoBoxManager.current.appendChild(video);
+  newVideoBox = (userId, videoTrack) =>{
+    this.videoBoxes[userId] = React.createRef();
+
+    this.videoBoxes.push(<VideoBox
+      ref={this.videoBoxes[userId]}
+      userId={userId}
+      videoTrack={videoTrack}
+    />);
+
+    this.setState({newVideoBox: true});
+
+    console.log('check this.videobox', this.videoBoxes);
   }
 
   render() {
     return (
-      <Container
-        className={this.classes.videoBoxManager}
-        ref={this.videoBoxManager}
-      />
+      <Container className={this.classes.videoBoxManager}>
+        {
+          this.state.newVideoBox ? this.videoBoxes : null
+        }
+      </Container>
     );
   }
 }
 
 VideoBoxManager.propTypes = {
-  updateMediaStream: PropTypes.func,
+  newVideoBox: PropTypes.func,
 };
 
 export default withStyles(styles)(VideoBoxManager);
