@@ -20,6 +20,14 @@ class VideoBox extends React.Component {
     this.classes = this.props.classes;
 
     this.videoBoxRef = React.createRef();
+
+    this.state = {
+      dismiss: false,
+    };
+  }
+
+  dismiss = () => {
+    this.setState({dismiss: true});
   }
 
   componentDidMount() {
@@ -28,13 +36,12 @@ class VideoBox extends React.Component {
 
   render() {
     return (
-      <video
-        className={this.classes.videoBox}
-        id={this.props.userId}
-        ref={this.videoBoxRef}
-        autoPlay
-      >
-      </video>
+      this.state.dismiss ? null :
+          <video
+            className={this.classes.videoBox}
+            ref={this.videoBoxRef}
+            autoPlay>
+          </video>
     );
   }
 }

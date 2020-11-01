@@ -7,6 +7,7 @@ import VideoBoxManager from './VideoBoxManager';
 import faker from 'faker';
 import withStyles from '@material-ui/styles/withStyles';
 import io from 'socket.io-client';
+import MediaController from './MediaController';
 
 const styles = () => ({
   meetingRoom: {
@@ -21,7 +22,6 @@ const styles = () => ({
     margin: '30px',
   },
   joinNowButton: {
-    // display: 'block',
     margin: 'auto',
   },
 });
@@ -56,6 +56,7 @@ class MeetingRoom extends React.Component {
     this.state = {
       video: false,
       audio: false,
+      callEnd: false,
       username: faker.internet.userName(),
     };
   }
@@ -68,7 +69,6 @@ class MeetingRoom extends React.Component {
       const userId = user.userId;
       if (userId === this.userId) return;
       this.rtcPeerConn[userId].onaddstream = (event) => {
-        console.log(event.stream.getTracks());
         this.videoBoxManagerRef.current.newVideoBox(userId, event.stream);
       };
     });
@@ -112,7 +112,6 @@ class MeetingRoom extends React.Component {
     }
 
     if (signal.type === 'ICE') {
-      console.log('received ice from user: ', signal.srcUserId);
       this.rtcPeerConn[signal.srcUserId]
           .addIceCandidate(new RTCIceCandidate(signal.message))
           .catch((e) => console.log(
@@ -176,6 +175,11 @@ class MeetingRoom extends React.Component {
         this.receiveSignalFromServer(data);
       });
 
+      this.socket.on('user left', (userId) => {
+        console.log('get user left!', userId);
+        this.videoBoxManagerRef.current.removeVideoBox(userId);
+      });
+
       this.socket.on('user joined',
           (joinedUserId, joinedUserName, userList) => {
             this.userList = userList;
@@ -219,6 +223,17 @@ class MeetingRoom extends React.Component {
         .catch((e) => console.log(e));
   });
 
+  handleVideo = (state) => {
+    this.setState({video: state});
+  }
+
+  callEnd = () => {
+    const tracks = this.localStream.getTracks();
+    tracks.forEach((track) => track.stop());
+    Object.keys(this.rtcPeerConn).forEach((k) => this.rtcPeerConn[k].close());
+    window.location.href = '/';
+  }
+
   render() {
     const {classes} = this.props;
     return (
@@ -241,6 +256,15 @@ class MeetingRoom extends React.Component {
         </Container>
 
         <VideoBoxManager ref={this.videoBoxManagerRef}/>
+
+        {
+            this.state.video ?
+              <MediaController
+                onHandleVideo={this.handleVideo}
+                onCallEnd={this.callEnd}
+              /> :
+              null
+        }
 
       </Container>
     );
