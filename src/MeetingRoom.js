@@ -50,6 +50,7 @@ class MeetingRoom extends React.Component {
     this.roomId = window.location.pathname.substr(1);
     this.socket = null;
     this.rtcPeerConn = {};
+    this.sender = {};
     this.userList = [];
     this.userId = null;
 
@@ -69,7 +70,11 @@ class MeetingRoom extends React.Component {
       const userId = user.userId;
       if (userId === this.userId) return;
       this.rtcPeerConn[userId].onaddstream = (event) => {
-        this.videoBoxManagerRef.current.newVideoBox(userId, event.stream);
+        this.videoBoxManagerRef.current.addVideoBox(userId, event.stream);
+        event.stream.onremovetrack = () => {
+          console.log('on remove track fired');
+          this.videoBoxManagerRef.current.stopStreamedVideo(userId);
+        };
       };
     });
   }
@@ -166,7 +171,7 @@ class MeetingRoom extends React.Component {
       this.userId = this.socket.id;
 
       this.videoBoxManagerRef.current
-          .newVideoBox(this.userId, this.localStream);
+          .addVideoBox(this.userId, this.localStream);
 
       this.socket.emit('join room',
           this.roomId, this.userId, this.state.username);
@@ -195,12 +200,14 @@ class MeetingRoom extends React.Component {
                 if (userId === this.userId) return;
 
                 for (const track of this.localStream.getTracks()) {
-                  this.rtcPeerConn[userId].addTrack(track, this.localStream);
+                  this.sender[userId] = this.rtcPeerConn[userId]
+                      .addTrack(track, this.localStream);
                 }
               });
             } else {
               for (const track of this.localStream.getTracks()) {
-                this.rtcPeerConn[lastUserId].addTrack(track, this.localStream);
+                this.sender[lastUserId] = this.rtcPeerConn[lastUserId]
+                    .addTrack(track, this.localStream);
               }
             }
           });
@@ -208,7 +215,7 @@ class MeetingRoom extends React.Component {
   }
 
   getLocalMedia = async () => {
-    // get a local stream, show it in our video tag and add it to be sent
+    // Get a local stream, show it in our video tag and add it to be sent
     await navigator.mediaDevices
         .getUserMedia({video: this.state.video})
         .then((stream) => {
@@ -223,13 +230,35 @@ class MeetingRoom extends React.Component {
         .catch((e) => console.log(e));
   });
 
-  handleVideo = (state) => {
-    this.setState({video: state});
+
+  // resendSdpOfferToServer = () => {
+  // }
+
+  onHandleVideo = (localVideoState) => {
+    console.log('state in on handle video:', localVideoState);
+    if (localVideoState === false) {
+      this.videoBoxManagerRef.current.stopStreamedVideo(this.userId);
+      this.userList.forEach((user) => {
+        const userId = user.userId;
+        if (userId === this.userId) return;
+        this.rtcPeerConn[userId].removeTrack(this.sender[userId]);
+      });
+    }
+    this.userList.forEach((user) => {
+      const userId = user.userId;
+      if (userId === this.userId) return;
+      // Send sdp offer
+      this.rtcPeerConn[userId].onnegotiationneeded = () => {
+        this.rtcPeerConn[userId].createOffer()
+            .then((description) => {
+              this.sendLocalDescription(userId, description);
+            })
+            .catch((e) => console.log(e));
+      };
+    });
   }
 
   callEnd = () => {
-    const tracks = this.localStream.getTracks();
-    tracks.forEach((track) => track.stop());
     Object.keys(this.rtcPeerConn).forEach((k) => this.rtcPeerConn[k].close());
     window.location.href = '/';
   }
@@ -255,16 +284,14 @@ class MeetingRoom extends React.Component {
           </Button>
         </Container>
 
-        <VideoBoxManager ref={this.videoBoxManagerRef}/>
+        <VideoBoxManager
+          ref={this.videoBoxManagerRef}
+        />
 
-        {
-            this.state.video ?
-              <MediaController
-                onHandleVideo={this.handleVideo}
-                onCallEnd={this.callEnd}
-              /> :
-              null
-        }
+        <MediaController
+          onHandleVideo={this.onHandleVideo}
+          onCallEnd={this.callEnd}
+        />
 
       </Container>
     );

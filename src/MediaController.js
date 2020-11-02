@@ -13,16 +13,6 @@ const styles = () => ({
     background: 'whitesmoke',
     textAlign: 'center',
   },
-
-// <IconButton style={{color: '#424242'}} onClick={this.handleVideo}>
-//   {(this.state.video === true)?<VideocamIcon/>:<VideocamOffIcon/>}
-// </IconButton>
-// <IconButton style={{color: '#f44336'}}>
-//   <CallEndIcon />
-// </IconButton>
-// <IconButton style={{color: '#424242'}} onClick={this.handleAudio}>
-//   {(this.state.audio === true)?<MicIcon/>:<MicOffIcon/>}
-// </IconButton>
 });
 
 class MediaController extends React.Component {
@@ -32,14 +22,14 @@ class MediaController extends React.Component {
     this.classes = this.props.classes;
 
     this.state ={
-      video: false,
-      audio: false,
+      localVideo: true,
+      localAudio: true,
     };
   }
 
   handleVideo = () => {
-    const reversedState = !this.state.video;
-    this.setState({video: reversedState});
+    const reversedState = !this.state.localVideo;
+    this.setState({localVideo: reversedState});
     this.props.onHandleVideo(reversedState);
   }
 
@@ -49,7 +39,7 @@ class MediaController extends React.Component {
 
         <IconButton onClick={this.handleVideo}>
           {
-            this.state.video ? <VideocamIcon/> : <VideocamOffIcon/>
+            !this.state.localVideo ? <VideocamIcon/> : <VideocamOffIcon/>
           }
         </IconButton>
 
@@ -59,7 +49,7 @@ class MediaController extends React.Component {
 
         <IconButton>
           {
-            this.state.audio ? <MicIcon/> : <MicOffIcon/>
+            !this.state.localAudio ? <MicIcon/> : <MicOffIcon/>
           }
         </IconButton>
 
