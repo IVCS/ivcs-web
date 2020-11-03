@@ -181,7 +181,6 @@ class MeetingRoom extends React.Component {
       });
 
       this.socket.on('user left', (userId) => {
-        console.log('get user left!', userId);
         this.videoBoxManagerRef.current.removeVideoBox(userId);
       });
 
@@ -217,7 +216,7 @@ class MeetingRoom extends React.Component {
   getLocalMedia = async () => {
     // Get a local stream, show it in our video tag and add it to be sent
     await navigator.mediaDevices
-        .getUserMedia({video: this.state.video})
+        .getUserMedia({video: true})
         .then((stream) => {
           this.localStream = stream;
         })
@@ -230,12 +229,26 @@ class MeetingRoom extends React.Component {
         .catch((e) => console.log(e));
   });
 
-
-  // resendSdpOfferToServer = () => {
-  // }
-
   onHandleVideo = (localVideoState) => {
-    console.log('state in on handle video:', localVideoState);
+    // Turn on camera
+    if (localVideoState === true) {
+      this.getLocalMedia()
+          .then(() => {
+            this.videoBoxManagerRef.current
+                .addVideoBox(this.userId, this.localStream);
+            this.userList.forEach((user) => {
+              const userId = user.userId;
+              if (userId === this.userId) return;
+              for (const track of this.localStream.getTracks()) {
+                this.sender[userId] = this.rtcPeerConn[userId]
+                    .addTrack(track, this.localStream);
+              }
+            });
+          })
+          .catch((e) => console.log(e));
+    }
+
+    // Turn off camera
     if (localVideoState === false) {
       this.videoBoxManagerRef.current.stopStreamedVideo(this.userId);
       this.userList.forEach((user) => {
@@ -244,6 +257,8 @@ class MeetingRoom extends React.Component {
         this.rtcPeerConn[userId].removeTrack(this.sender[userId]);
       });
     }
+
+    // Resend sdp after switching camera
     this.userList.forEach((user) => {
       const userId = user.userId;
       if (userId === this.userId) return;

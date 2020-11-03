@@ -21,6 +21,8 @@ class VideoBox extends React.Component {
 
     this.videoBoxRef = React.createRef();
 
+    this.stream = null;
+
     this.tracks = null;
 
     this.state = {
@@ -34,6 +36,10 @@ class VideoBox extends React.Component {
     canvas.getContext('2d').fillRect(0, 0, width, height);
     const captureStream = canvas.captureStream();
     return Object.assign(captureStream.getVideoTracks()[0], {enabled: false});
+  }
+
+  attachNewStream = (stream) => {
+    this.videoBoxRef.current.srcObject = stream;
   }
 
   stopStreamedVideo = () => {
@@ -53,16 +59,18 @@ class VideoBox extends React.Component {
   }
 
   componentDidMount() {
-    this.videoBoxRef.current.srcObject = this.props.videoTrack;
+    this.stream = this.props.stream;
+    this.videoBoxRef.current.srcObject = this.stream;
     this.tracks = this.videoBoxRef.current.srcObject.getTracks();
-    console.log('this tracks in video box', this.tracks);
-    this.tracks.forEach((track) => {
-      console.log('foreach tracks in video box', track);
-      track.onended = () => {
-        console.log('onended triggered');
-        track.stop();
-      };
-    });
+
+    // console.log('this tracks in video box', this.tracks);
+    // this.tracks.forEach((track) => {
+    //   console.log('foreach tracks in video box', track);
+    //   track.onended = () => {
+    //     console.log('onended triggered');
+    //     track.stop();
+    //   };
+    // });
   }
 
   render() {
