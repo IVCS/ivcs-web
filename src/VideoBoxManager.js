@@ -34,6 +34,10 @@ class VideoBoxManager extends React.Component {
     this.videoBoxRefs[userId].current.stopStreamedVideo();
   }
 
+  stopStreamedAudio = (userId) => {
+    this.videoBoxRefs[userId].current.stopStreamedAudio();
+  }
+
   reopenCamera = (userId, stream) => {
     this.videoBoxRefs[userId].current.attachNewStream(stream);
   }

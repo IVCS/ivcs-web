@@ -23,7 +23,11 @@ class VideoBox extends React.Component {
 
     this.stream = null;
 
-    this.tracks = null;
+    this.videoTrack = null;
+    this.audioTrack = null;
+
+    this.video = true;
+    this.audio = true;
 
     this.state = {
       dismiss: false,
@@ -39,6 +43,7 @@ class VideoBox extends React.Component {
   }
 
   attachNewStream = (stream) => {
+    this.video = true;
     this.videoBoxRef.current.srcObject = stream;
   }
 
@@ -53,6 +58,12 @@ class VideoBox extends React.Component {
     // });
   }
 
+  stopStreamedAudio = () => {
+    this.audioTrack.forEach((track) => {
+      track.stop();
+    });
+  }
+
   dismiss = () => {
     this.stopStreamedVideo();
     this.setState({dismiss: true});
@@ -60,17 +71,16 @@ class VideoBox extends React.Component {
 
   componentDidMount() {
     this.stream = this.props.stream;
-    this.videoBoxRef.current.srcObject = this.stream;
-    this.tracks = this.videoBoxRef.current.srcObject.getTracks();
+    // this.videoBoxRef.current.srcObject = this.stream.getVideoTracks[0];
 
-    // console.log('this tracks in video box', this.tracks);
-    // this.tracks.forEach((track) => {
-    //   console.log('foreach tracks in video box', track);
-    //   track.onended = () => {
-    //     console.log('onended triggered');
-    //     track.stop();
-    //   };
-    // });
+    const testStream = new MediaStream();
+
+    testStream.addTrack(this.stream.getVideoTracks()[0]);
+
+    this.videoBoxRef.current.srcObject = testStream;
+
+    this.audioTrack = this.stream.getAudioTracks();
+    this.videoTrack = this.stream.getVideoTracks();
   }
 
   render() {
