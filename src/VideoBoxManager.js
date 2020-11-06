@@ -46,22 +46,22 @@ class VideoBoxManager extends React.Component {
     this.videoBoxRefs[userId].current.dismiss();
   }
 
-  addVideoBox = (userId, stream) => {
-    if (this.videoBoxRefs[userId]) {
-      this.reopenCamera(userId, stream);
-      return;
-    }
-
+  addVideoBox = (userId) => {
     this.videoBoxRefs[userId] = React.createRef();
 
     this.videoBoxes.push(<VideoBox
       ref={this.videoBoxRefs[userId]}
       userId={userId}
-      stream={stream}
     />);
 
-    console.log('length of video boxes', this.videoBoxes.length);
     this.setState({addVideoBox: true});
+  }
+
+  handleTrack = (userId, track) => {
+    if (!this.videoBoxRefs[userId]) {
+      this.addVideoBox(userId);
+    }
+    this.videoBoxRefs[userId].current.addTrack(track);
   }
 
   render() {

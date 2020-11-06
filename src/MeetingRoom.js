@@ -71,21 +71,18 @@ class MeetingRoom extends React.Component {
     this.userList.forEach((user) => {
       const userId = user.userId;
       if (userId === this.userId) return;
-      this.rtcPeerConn[userId].onaddstream = (event) => {
-        console.log('print stream after onaddstream by add audio track', event.stream.getTracks());
+      this.rtcPeerConn[userId].ontrack = (event) => {
+        this.videoBoxManagerRef.current.handleTrack(userId, event.track);
 
-        this.videoBoxManagerRef.current.addVideoBox(userId, event.stream);
-
-        event.stream.onremovetrack = () => {
-          console.log('on remove track fired');
-          console.log('rtcConn: ', this.rtcPeerConn[userId]);
-          console.log('audiotracks: ', event.stream.getAudioTracks());
-          if (event.stream.getAudioTracks().length === 0) {
-            this.videoBoxManagerRef.current.stopStreamedAudio(userId);
-          } else {
-            this.videoBoxManagerRef.current.stopStreamedVideo(userId);
-          }
-        };
+        // event.stream.onremovetrack = () => {
+        //   if (event.stream.getAudioTracks().length === 0) {
+        //     this.videoBoxManagerRef.current.stopStreamedAudio(userId);
+        //   } else {
+        //     this.videoBoxManagerRef.current.stopStreamedVideo(userId);
+        //   }
+        //
+        //   this.videoBoxManagerRef.current.stopStreamedVideo(userId);
+        // };
       };
     });
   }
@@ -181,9 +178,6 @@ class MeetingRoom extends React.Component {
     this.socket.on('connect', () => {
       this.userId = this.socket.id;
 
-      this.videoBoxManagerRef.current
-          .addVideoBox(this.userId, this.localStream);
-
       this.socket.emit('join room',
           this.roomId, this.userId, this.state.username);
 
@@ -236,8 +230,12 @@ class MeetingRoom extends React.Component {
         .getUserMedia({video: true, audio: true})
         .then((stream) => {
           this.localStream = stream;
-          this.localAudioTrack = stream.getAudioTracks()[0];
           this.localVideoTrack = stream.getVideoTracks()[0];
+          this.localAudioTrack = stream.getAudioTracks()[0];
+          this.videoBoxManagerRef.current
+              .handleTrack(this.userId, this.localVideoTrack);
+          this.videoBoxManagerRef.current
+              .handleTrack(this.userId, this.localAudioTrack);
         })
         .catch((e) => console.log(e));
   }

@@ -21,7 +21,7 @@ class VideoBox extends React.Component {
 
     this.videoBoxRef = React.createRef();
 
-    this.stream = null;
+    this.stream = new MediaStream();
 
     this.videoTrack = null;
     this.audioTrack = null;
@@ -69,18 +69,24 @@ class VideoBox extends React.Component {
     this.setState({dismiss: true});
   }
 
-  componentDidMount() {
-    this.stream = this.props.stream;
-    // this.videoBoxRef.current.srcObject = this.stream.getVideoTracks[0];
+  // componentDidMount() {
+  //   this.stream = this.props.stream;
+  //   // this.videoBoxRef.current.srcObject = this.stream.getVideoTracks[0];
+  //
+  //   const testStream = new MediaStream();
+  //
+  //   testStream.addTrack(this.stream.getVideoTracks()[0]);
+  //
+  //   this.videoBoxRef.current.srcObject = testStream;
+  //
+  //   this.audioTrack = this.stream.getAudioTracks();
+  //   this.videoTrack = this.stream.getVideoTracks();
+  // }
 
-    const testStream = new MediaStream();
-
-    testStream.addTrack(this.stream.getVideoTracks()[0]);
-
-    this.videoBoxRef.current.srcObject = testStream;
-
-    this.audioTrack = this.stream.getAudioTracks();
-    this.videoTrack = this.stream.getVideoTracks();
+  addTrack = (track) => {
+    console.log('add track func in video box,', this.stream);
+    this.stream.addTrack(track);
+    this.videoBoxRef.current.srcObject = this.stream;
   }
 
   render() {
