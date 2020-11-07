@@ -26,6 +26,7 @@ const styles = () => ({
   },
 });
 
+// TODO: Deploy to remote server
 const signalingServerUrl = 'http://127.0.0.1:3001';
 
 const RTCIceServerConfig = {
@@ -74,15 +75,14 @@ class MeetingRoom extends React.Component {
       this.rtcPeerConn[userId].ontrack = (event) => {
         this.videoBoxManagerRef.current.handleTrack(userId, event.track);
 
-        // event.stream.onremovetrack = () => {
-        //   if (event.stream.getAudioTracks().length === 0) {
-        //     this.videoBoxManagerRef.current.stopStreamedAudio(userId);
-        //   } else {
-        //     this.videoBoxManagerRef.current.stopStreamedVideo(userId);
-        //   }
-        //
-        //   this.videoBoxManagerRef.current.stopStreamedVideo(userId);
-        // };
+        event.streams[0].onremovetrack = () => {
+          if (event.streams[0].getAudioTracks().length === 0) {
+            this.videoBoxManagerRef.current.stopStreamedAudio(userId);
+          } else {
+            console.log('user id before stop video', userId);
+            this.videoBoxManagerRef.current.stopStreamedVideo(userId);
+          }
+        };
       };
     });
   }
@@ -178,6 +178,11 @@ class MeetingRoom extends React.Component {
     this.socket.on('connect', () => {
       this.userId = this.socket.id;
 
+      this.videoBoxManagerRef.current
+          .handleTrack(this.userId, this.localVideoTrack);
+      this.videoBoxManagerRef.current
+          .handleTrack(this.userId, this.localAudioTrack);
+
       this.socket.emit('join room',
           this.roomId, this.userId, this.state.username);
 
@@ -232,10 +237,6 @@ class MeetingRoom extends React.Component {
           this.localStream = stream;
           this.localVideoTrack = stream.getVideoTracks()[0];
           this.localAudioTrack = stream.getAudioTracks()[0];
-          this.videoBoxManagerRef.current
-              .handleTrack(this.userId, this.localVideoTrack);
-          this.videoBoxManagerRef.current
-              .handleTrack(this.userId, this.localAudioTrack);
         })
         .catch((e) => console.log(e));
   }
@@ -246,34 +247,7 @@ class MeetingRoom extends React.Component {
         .catch((e) => console.log(e));
   });
 
-  onHandleVideo = (localVideoState) => {
-    // Turn on camera
-    if (localVideoState === true) {
-      this.getLocalMedia()
-          .then(() => {
-            this.videoBoxManagerRef.current
-                .addVideoBox(this.userId, this.localStream);
-            this.userList.forEach((user) => {
-              const userId = user.userId;
-              if (userId === this.userId) return;
-              this.sender[userId]['videoTrack'] = this.rtcPeerConn[userId]
-                  .addTrack(this.localVideoTrack, this.localStream);
-            });
-          })
-          .catch((e) => console.log(e));
-    }
-
-    // Turn off camera
-    if (localVideoState === false) {
-      this.videoBoxManagerRef.current.stopStreamedVideo(this.userId);
-      this.userList.forEach((user) => {
-        const userId = user.userId;
-        if (userId === this.userId) return;
-        this.rtcPeerConn[userId].removeTrack(this.sender[userId]['videoTrack']);
-      });
-    }
-
-    // Resend sdp after switching camera
+  resendSdpSignalToServer = () => {
     this.userList.forEach((user) => {
       const userId = user.userId;
       if (userId === this.userId) return;
@@ -286,6 +260,37 @@ class MeetingRoom extends React.Component {
             .catch((e) => console.log(e));
       };
     });
+  }
+
+  onHandleVideo = (localVideoState) => {
+    // Turn on camera
+    if (localVideoState === true) {
+      this.getLocalMedia()
+          .then(() => {
+            this.videoBoxManagerRef.current
+                .handleTrack(this.userId, this.localVideoTrack);
+            this.userList.forEach((user) => {
+              const userId = user.userId;
+              if (userId === this.userId) return;
+              this.sender[userId]['videoTrack'] = this.rtcPeerConn[userId]
+                  .addTrack(this.localVideoTrack, this.localStream);
+            });
+          })
+          .catch((e) => console.log(e));
+    }
+
+    // Turn off camera
+    if (localVideoState === false) {
+      console.log('before stop local video userid', this.userId);
+      this.videoBoxManagerRef.current.stopStreamedVideo(this.userId);
+      this.userList.forEach((user) => {
+        const userId = user.userId;
+        if (userId === this.userId) return;
+        this.rtcPeerConn[userId].removeTrack(this.sender[userId]['videoTrack']);
+      });
+    }
+
+    this.resendSdpSignalToServer();
   }
 
   onHandleAudio = (localAudioState) => {
@@ -317,19 +322,7 @@ class MeetingRoom extends React.Component {
       });
     }
 
-    // Resend sdp after switching camera
-    this.userList.forEach((user) => {
-      const userId = user.userId;
-      if (userId === this.userId) return;
-      // Send sdp offer
-      this.rtcPeerConn[userId].onnegotiationneeded = () => {
-        this.rtcPeerConn[userId].createOffer()
-            .then((description) => {
-              this.sendLocalDescription(userId, description);
-            })
-            .catch((e) => console.log(e));
-      };
-    });
+    this.resendSdpSignalToServer();
   }
 
   callEnd = () => {
