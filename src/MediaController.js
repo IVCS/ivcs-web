@@ -33,6 +33,12 @@ class MediaController extends React.Component {
     this.props.onHandleVideo(reversedState);
   }
 
+  handleAudio = () => {
+    const reversedState = !this.state.localAudio;
+    this.setState({localAudio: reversedState});
+    this.props.onHandleAudio(reversedState);
+  }
+
   render() {
     return (
       <Container className={this.classes.mediaController}>
@@ -47,7 +53,7 @@ class MediaController extends React.Component {
           <CallEndIcon onClick={this.props.onCallEnd}/>
         </IconButton>
 
-        <IconButton>
+        <IconButton onClick={this.handleAudio}>
           {
             !this.state.localAudio ? <MicIcon/> : <MicOffIcon/>
           }

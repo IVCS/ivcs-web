@@ -19,11 +19,17 @@ class VideoBox extends React.Component {
 
     this.classes = this.props.classes;
 
-    this.videoBoxRef = React.createRef();
+    this.videoRef = React.createRef();
+    this.audioRef = React.createRef();
 
-    this.stream = null;
+    this.videoStream = null;
+    this.audioStream = null;
 
-    this.tracks = null;
+    this.videoTrack = null;
+    this.audioTrack = null;
+
+    this.video = true;
+    this.audio = true;
 
     this.state = {
       dismiss: false,
@@ -38,49 +44,51 @@ class VideoBox extends React.Component {
     return Object.assign(captureStream.getVideoTracks()[0], {enabled: false});
   }
 
-  attachNewStream = (stream) => {
-    this.videoBoxRef.current.srcObject = stream;
-  }
-
-  stopStreamedVideo = () => {
-    this.videoBoxRef.current.srcObject = new MediaStream([this.blackCanvas()]);
-    // this.tracks.forEach((track) => {
-    //   track.stop();
-    //   track.enabled = false;
-    //   const blackCanvasStream = new MediaStream(this.blackCanvas());
-    //   this.videoBoxRef.current.srcObject = blackCanvasStream;
-    //   // track.dispatchEvent(new Event('ended'));
-    // });
-  }
-
   dismiss = () => {
-    this.stopStreamedVideo();
+    this.removeVideoTrack();
+    this.removeAudioTrack();
     this.setState({dismiss: true});
   }
 
-  componentDidMount() {
-    this.stream = this.props.stream;
-    this.videoBoxRef.current.srcObject = this.stream;
-    this.tracks = this.videoBoxRef.current.srcObject.getTracks();
+  removeVideoTrack = () => {
+    this.videoStream = new MediaStream([this.blackCanvas()]);
+    this.videoRef.current.srcObject = this.videoStream;
+  }
 
-    // console.log('this tracks in video box', this.tracks);
-    // this.tracks.forEach((track) => {
-    //   console.log('foreach tracks in video box', track);
-    //   track.onended = () => {
-    //     console.log('onended triggered');
-    //     track.stop();
-    //   };
-    // });
+  removeAudioTrack = () => {
+    this.audioStream = new MediaStream();
+    this.audioRef.current.srcObject = this.audioStream;
+  }
+
+  addTrack = (track) => {
+    if (track.kind === 'video') {
+      this.videoStream = new MediaStream();
+      this.videoStream.addTrack(track);
+      this.videoRef.current.srcObject = this.videoStream;
+      this.videoTrack = track;
+    }
+
+    if (track.kind === 'audio') {
+      this.audioStream = new MediaStream();
+      this.audioStream.addTrack(track);
+      this.audioRef.current.srcObject = this.audioStream;
+      this.audioTrack = track;
+    }
   }
 
   render() {
     return (
       this.state.dismiss ? null :
-          <video
-            className={this.classes.videoBox}
-            ref={this.videoBoxRef}
-            autoPlay>
-          </video>
+            <video
+              className={this.classes.videoBox}
+              ref={this.videoRef}
+              autoPlay>
+
+              <audio
+                ref={this.audioRef}
+                autoPlay>
+              </audio>
+            </video>
     );
   }
 }
