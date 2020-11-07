@@ -43,7 +43,6 @@ class VideoBoxManager extends React.Component {
   }
 
   addVideoBox = (userId) => {
-    console.log('user id in add video box', userId);
     this.videoBoxRefs[userId] = React.createRef();
 
     this.videoBoxes.push(<VideoBox
@@ -55,7 +54,6 @@ class VideoBoxManager extends React.Component {
   }
 
   handleTrack = (userId, track) => {
-    console.log('user id in handle track', userId);
     if (!this.videoBoxRefs[userId]) {
       this.addVideoBox(userId);
     }

@@ -75,12 +75,12 @@ class MeetingRoom extends React.Component {
       this.rtcPeerConn[userId].ontrack = (event) => {
         this.videoBoxManagerRef.current.handleTrack(userId, event.track);
 
-        event.streams[0].onremovetrack = () => {
-          if (event.streams[0].getAudioTracks().length === 0) {
-            this.videoBoxManagerRef.current.stopStreamedAudio(userId);
-          } else {
-            console.log('user id before stop video', userId);
+        event.streams[0].onremovetrack = (event) => {
+          if (event.track.kind === 'video') {
             this.videoBoxManagerRef.current.stopStreamedVideo(userId);
+          }
+          if (event.track.kind === 'audio') {
+            this.videoBoxManagerRef.current.stopStreamedAudio(userId);
           }
         };
       };
@@ -281,7 +281,6 @@ class MeetingRoom extends React.Component {
 
     // Turn off camera
     if (localVideoState === false) {
-      console.log('before stop local video userid', this.userId);
       this.videoBoxManagerRef.current.stopStreamedVideo(this.userId);
       this.userList.forEach((user) => {
         const userId = user.userId;
@@ -315,10 +314,7 @@ class MeetingRoom extends React.Component {
         const userId = user.userId;
         if (userId === this.userId) return;
 
-        console.log('before remove rtcConn', this.rtcPeerConn[userId]);
-        console.log('before remove rtcConn', this.localStream.getAudioTracks());
         this.rtcPeerConn[userId].removeTrack(this.sender[userId]['audioTrack']);
-        console.log('after remove rtcConn', this.rtcPeerConn[userId]);
       });
     }
 
