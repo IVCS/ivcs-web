@@ -34,6 +34,9 @@ class VideoBox extends React.Component {
     this.state = {
       dismiss: false,
     };
+
+
+    this.audioNum = 0;
   }
 
   blackCanvas = ({width = 200, height = 150} = {}) => {

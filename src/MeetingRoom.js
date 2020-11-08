@@ -26,8 +26,8 @@ const styles = () => ({
   },
 });
 
-// TODO: Deploy to remote server
-const signalingServerUrl = 'http://127.0.0.1:3001';
+// const signalingServerUrl = 'https://eny.li/';
+const signalingServerUrl = 'http://localhost:3001';
 
 const RTCIceServerConfig = {
   iceServers: [
@@ -58,6 +58,7 @@ class MeetingRoom extends React.Component {
     this.userId = null;
 
     this.state = {
+      joined: false,
       video: false,
       audio: false,
       callEnd: false,
@@ -180,8 +181,6 @@ class MeetingRoom extends React.Component {
 
       this.videoBoxManagerRef.current
           .handleTrack(this.userId, this.localVideoTrack);
-      this.videoBoxManagerRef.current
-          .handleTrack(this.userId, this.localAudioTrack);
 
       this.socket.emit('join room',
           this.roomId, this.userId, this.state.username);
@@ -241,7 +240,7 @@ class MeetingRoom extends React.Component {
         .catch((e) => console.log(e));
   }
 
-  joinRoom = () => this.setState({video: true}, () => {
+  joinRoom = () => this.setState({joined: true}, () => {
     this.getLocalMedia()
         .then(() => this.connectServer())
         .catch((e) => console.log(e));
@@ -335,17 +334,21 @@ class MeetingRoom extends React.Component {
             IVCS
         </Typography>
 
-        <Container className={classes.joinNowContainer}>
-          <Input
-            onChange={(e) => this.changeUsername(e)}
-            placeholder="username"
-            value={this.state.username}
-          />
-          <Button variant="outlined" color="primary" onClick={this.joinRoom}
-            className={classes.joinNowButton}>
-              Join Now
-          </Button>
-        </Container>
+        {
+          !this.state.joined ?
+            <Container className={classes.joinNowContainer}>
+              <Input
+                onChange={(e) => this.changeUsername(e)}
+                placeholder="username"
+                value={this.state.username}
+              />
+              <Button variant="outlined" color="primary" onClick={this.joinRoom}
+                className={classes.joinNowButton}>
+                    Join Now
+              </Button>
+            </Container> :
+          null
+        }
 
         <VideoBoxManager
           ref={this.videoBoxManagerRef}
