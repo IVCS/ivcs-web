@@ -8,21 +8,46 @@ import faker from 'faker';
 import withStyles from '@material-ui/styles/withStyles';
 import io from 'socket.io-client';
 import MediaController from './MediaController';
+import TopNavigation from './TopNavigation';
+import VoiceChatOutlinedIcon from '@material-ui/icons/VoiceChatOutlined';
 
-const styles = () => ({
+const roomStyles = () => ({
+  mainRoom: {
+    position: 'fixed',
+    left: '0px',
+    top: '0px',
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    maxWidth: '100%',
+    maxHeight: '100%',
+  },
   meetingRoom: {
-    margin: 'auto',
-    marginTop: '100px',
-    backgroundColor: '#e2b0b0',
-    width: '50%',
-    height: '50%',
-    minWidth: '400px',
+    position: 'relative',
+    margin: 0,
+    backgroundColor: '#FFFFFF',
+    width: '100%',
+    height: '80%',
+    maxWidth: '100%',
+    maxHeight: '100%',
+    overflow: 'hidden',
+  },
+  title: {
+    height: '20%',
   },
   joinNowContainer: {
-    margin: '30px',
+    position: 'relative',
+    background: '#FFFFFF',
+    width: '35%',
+    height: '20%',
   },
   joinNowButton: {
+    position: 'relative',
     margin: 'auto',
+  },
+  inputText: {
+    position: 'relative',
+    margin: '20px 10px',
   },
 });
 
@@ -116,7 +141,8 @@ class MeetingRoom extends React.Component {
               if (signal.message.type === 'offer') {
                 this.rtcPeerConn[signal.srcUserId].createAnswer()
                     .then((description) => {
-                      this.sendLocalDescription(signal.srcUserId, description);
+                      this.sendLocalDescription(signal.srcUserId,
+                          description);
                     })
                     .catch((e) => console.log(e));
               }
@@ -215,14 +241,16 @@ class MeetingRoom extends React.Component {
                     .addTrack(this.localVideoTrack, this.localStream);
               });
             } else {
-            // Only add stream to the connection of the last newest user
+              // Only add stream to the connection of the last newest user
               this.sender[lastUserId] = {};
               this.sender[lastUserId]['audioTrack'] =
-                this.rtcPeerConn[lastUserId]
-                    .addTrack(this.localAudioTrack, this.localStream);
+                            this.rtcPeerConn[lastUserId]
+                                .addTrack(this.localAudioTrack,
+                                    this.localStream);
               this.sender[lastUserId]['videoTrack'] =
-                  this.rtcPeerConn[lastUserId]
-                      .addTrack(this.localVideoTrack, this.localStream);
+                            this.rtcPeerConn[lastUserId]
+                                .addTrack(this.localVideoTrack,
+                                    this.localStream);
             }
           });
     });
@@ -284,7 +312,8 @@ class MeetingRoom extends React.Component {
       this.userList.forEach((user) => {
         const userId = user.userId;
         if (userId === this.userId) return;
-        this.rtcPeerConn[userId].removeTrack(this.sender[userId]['videoTrack']);
+        this.rtcPeerConn[userId]
+            .removeTrack(this.sender[userId]['videoTrack']);
       });
     }
 
@@ -313,7 +342,8 @@ class MeetingRoom extends React.Component {
         const userId = user.userId;
         if (userId === this.userId) return;
 
-        this.rtcPeerConn[userId].removeTrack(this.sender[userId]['audioTrack']);
+        this.rtcPeerConn[userId]
+            .removeTrack(this.sender[userId]['audioTrack']);
       });
     }
 
@@ -328,41 +358,49 @@ class MeetingRoom extends React.Component {
   render() {
     const {classes} = this.props;
     return (
-      <Container className={classes.meetingRoom}>
+      <Container className={classes.mainRoom} disableGutters = {true} >
+        <TopNavigation/>
+        <Container className={classes.meetingRoom} disableGutters = {true}>
+          <Typography align="center" color="primary"
+            variant="h2" className={classes.title}>
+                        IVCS
+          </Typography>
+          {
+              !this.state.joined ?
+                 <Container align="center"
+                   className={classes.joinNowContainer}>
+                   <Input
+                     onChange={(e) => this.changeUsername(e)}
+                     placeholder="username"
+                     value={this.state.username}
+                     className={classes.inputText}
+                   />
+                   <Button variant="contained" color="primary"
+                     className={classes.joinNowButton}
+                     startIcon = {<VoiceChatOutlinedIcon />}
+                     onClick={this.joinRoom}>
+                                Join Now
+                   </Button>
+                 </Container> : null
+          }
+          <VideoBoxManager
+            ref={this.videoBoxManagerRef}
+          />
 
-        <Typography align="center" color="primary" variant="h2">
-            IVCS
-        </Typography>
-
+        </Container>
         {
-          !this.state.joined ?
-            <Container className={classes.joinNowContainer}>
-              <Input
-                onChange={(e) => this.changeUsername(e)}
-                placeholder="username"
-                value={this.state.username}
-              />
-              <Button variant="outlined" color="primary" onClick={this.joinRoom}
-                className={classes.joinNowButton}>
-                    Join Now
-              </Button>
-            </Container> :
-          null
+          this.state.joined ?
+
+              <MediaController
+                onHandleVideo={this.onHandleVideo}
+                onHandleAudio={this.onHandleAudio}
+                onCallEnd={this.callEnd}
+              /> :
+              null
         }
-
-        <VideoBoxManager
-          ref={this.videoBoxManagerRef}
-        />
-
-        <MediaController
-          onHandleVideo={this.onHandleVideo}
-          onHandleAudio={this.onHandleAudio}
-          onCallEnd={this.callEnd}
-        />
-
       </Container>
     );
   }
 }
 
-export default withStyles(styles)(MeetingRoom);
+export default withStyles(roomStyles)(MeetingRoom);

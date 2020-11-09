@@ -8,10 +8,27 @@ import MicOffIcon from '@material-ui/icons/MicOff';
 import CallEndIcon from '@material-ui/icons/CallEnd';
 import IconButton from '@material-ui/core/IconButton';
 
-const styles = () => ({
+const controllerStyles = () => ({
   mediaController: {
-    background: 'whitesmoke',
-    textAlign: 'center',
+    position: 'absolute',
+    bottom: 0,
+    margin: 0,
+    boxShadow: '0 0 10px 10px rgba(255, 255, 255, .6)',
+    background: '#fff',
+    borderWidth: 'thin',
+    borderColor: '#fff',
+    borderStyle: 'outset',
+    borderRadius: '10px',
+    opacityStyle: 1,
+    whiteSpace: 'nowrap',
+    height: '80px',
+    maxWidth: '100%',
+    maxHeight: '100%',
+  },
+  controlButton: {
+    position: 'relative',
+    margin: '15px',
+    height: '45px',
   },
 });
 
@@ -40,22 +57,26 @@ class MediaController extends React.Component {
   }
 
   render() {
+    const classes = this.props.classes;
     return (
-      <Container className={this.classes.mediaController}>
+      <Container disableGutters = {true} align="center"
+        className={classes.mediaController} >
 
-        <IconButton onClick={this.handleVideo}>
+        <IconButton onClick={this.handleVideo}
+          className={classes.controlButton}>
           {
-            !this.state.localVideo ? <VideocamIcon/> : <VideocamOffIcon/>
+            this.state.localVideo ? <VideocamIcon/> : <VideocamOffIcon/>
           }
         </IconButton>
 
-        <IconButton>
+        <IconButton className={classes.controlButton}>
           <CallEndIcon onClick={this.props.onCallEnd}/>
         </IconButton>
 
-        <IconButton onClick={this.handleAudio}>
+        <IconButton onClick={this.handleAudio}
+          className={classes.controlButton}>
           {
-            !this.state.localAudio ? <MicIcon/> : <MicOffIcon/>
+            this.state.localAudio ? <MicIcon/> : <MicOffIcon/>
           }
         </IconButton>
 
@@ -64,4 +85,4 @@ class MediaController extends React.Component {
   }
 }
 
-export default withStyles(styles)(MediaController);
+export default withStyles(controllerStyles)(MediaController);

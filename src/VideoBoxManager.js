@@ -4,14 +4,22 @@ import PropTypes from 'prop-types';
 import Container from '@material-ui/core/Container';
 import VideoBox from './VideoBox';
 
-const styles = () => ({
+const boxContainerStyles = () => ({
   videoBoxManager: {
     display: 'flex',
+    position: 'relative',
     flexFlow: 'row wrap',
     justifyContent: 'space-around',
     padding: 0,
-    margin: 0,
+    margin: '0 auto',
+    height: '79.5%',
     listStyle: 'none',
+    textAlign: 'center',
+    maxWidth: '100%',
+    maxHeight: '100%',
+    alignItems: 'stretch',
+    flexWrap: 'wrap',
+    overflow: 'auto',
   },
 });
 
@@ -43,6 +51,7 @@ class VideoBoxManager extends React.Component {
   }
 
   addVideoBox = (userId) => {
+    console.log('user id in add video box', userId);
     this.videoBoxRefs[userId] = React.createRef();
 
     this.videoBoxes.push(<VideoBox
@@ -62,7 +71,8 @@ class VideoBoxManager extends React.Component {
 
   render() {
     return (
-      <Container className={this.classes.videoBoxManager}>
+      <Container disableGutters = {true}
+        className={this.classes.videoBoxManager}>
         {
             this.state.addVideoBox ? this.videoBoxes : null
         }
@@ -76,4 +86,4 @@ VideoBoxManager.propTypes = {
   removeVideoBox: PropTypes.func,
 };
 
-export default withStyles(styles)(VideoBoxManager);
+export default withStyles(boxContainerStyles)(VideoBoxManager);

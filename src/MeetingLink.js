@@ -2,20 +2,31 @@ import React from 'react';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
-import {withStyles} from '@material-ui/styles';
+import VideoCallRoundedIcon from '@material-ui/icons/VideoCallRounded';
+import withStyles from '@material-ui/styles/withStyles';
 
-const styles = () => ({
+const linkStyles = () => ({
   meetingLink: {
     background: 'white',
     width: '35%',
     height: 'auto',
-    margin: '10%',
+    margin: '5% 10%',
     float: 'left',
   },
   meetingLinkTitle: {
     margin: 0,
     fontWeight: 'bold',
-    paddingRight: '50px',
+  },
+  button: {
+    position: 'relative',
+    margin: '10px',
+  },
+  slogan: {
+    fontSize: '1.25rem',
+    fontWeight: '400',
+    letterSpacing: 0,
+    lineHeight: '2.25rem',
+    paddingBottom: '.5em',
   },
 });
 
@@ -43,7 +54,6 @@ class MeetingLink extends React.Component {
       }
     }
 
-
     return str.slice(0, 3) + '-' + str.slice(3, 7) +
         '-' + str.slice(7, 10);
   }
@@ -58,16 +68,19 @@ class MeetingLink extends React.Component {
   }
 
   render() {
-    const {classes} = this.props;
+    const classes = this.props.classes;
     return (
       <Container className={classes.meetingLink}>
-        <Typography component="p" className={classes.meetingLinkTitle}>
-            Start or join a meeting
+        <Typography variant="h6" align="center"
+          className={classes.meetingLinkTitle}>
+            Start a meeting
         </Typography>
-        <Button onClick={this.johnMeeting}>Join Meeting</Button>
+        <Button variant="contained" color="primary" className={classes.button}
+          startIcon = {<VideoCallRoundedIcon />}
+          onClick={this.johnMeeting}>Join Meeting</Button>
       </Container>
     );
   }
 }
 
-export default withStyles(styles)(MeetingLink);
+export default withStyles(linkStyles)(MeetingLink);

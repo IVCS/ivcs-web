@@ -9,7 +9,8 @@ const useStyles = () => ({
     background: 'white',
     width: '35%',
     height: 'auto',
-    margin: '10%',
+    margin: '8% 8%',
+    maxWidth: '100%',
   },
   meetingLinkTitle: {
     margin: 0,
@@ -38,18 +39,18 @@ class MyCarousel extends React.Component {
 
     this.items = [
       {
-        name: 'Random Name #1',
-        description: 'Probably the most random thing you have ever seen!',
+        name: 'Let\'s meet at IVCS and make remote work more efficient.',
+        description: '',
       },
       {
-        name: 'Random Name #2',
-        description: 'Hello World!',
+        name: 'Happy every encounter.',
+        description: '',
       },
     ];
   }
 
   render() {
-    const {classes} = this.props;
+    const classes = this.props.classes;
     return (
       <Carousel className={classes.carousel}>
         {

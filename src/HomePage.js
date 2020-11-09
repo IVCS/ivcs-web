@@ -1,42 +1,58 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
-import {withStyles} from '@material-ui/styles';
+import withStyles from '@material-ui/styles/withStyles';
 import MeetingLink from './MeetingLink';
 import Carousel from './Carousel';
-
-const styles = () => ({
+import TopNavigation from './TopNavigation';
+const homeStyles = () => ({
+  fullScreen: {
+    position: 'fixed',
+    margin: 0,
+    left: '0px',
+    top: '0px',
+    width: '100%',
+    maxWidth: '100%',
+    maxHeight: '100%',
+    overflow: 'auto',
+  },
   main: {
-    backgroundColor: '#505355',
-    margin: '100px',
+    backgroundColor: '#FFFFFF',
+    position: 'relative',
+    margin: 0,
     padding: '30px',
-    width: 'auto',
-    height: 'auto',
+    width: '100%',
+    height: '100%',
+    maxWidth: '100%',
+    maxHeight: '100%',
   },
   banner: {
-    backgroundColor: '#cfe8fc',
+    backgroundColor: '#FFFFFF',
     margin: '50px',
+    fontWeight: 'bold',
+    textDecoration: 'blink',
+    textShadow: 'hShadow, vShadow, onBlurCapture',
   },
 });
 
 class HomePage extends React.Component {
-  // constructor(props) {
-  //   super(props);
-  //   // this.state = {url: ''};
-  // }
-
   render() {
-    const {classes} = this.props;
+    const classes = this.props.classes;
     return (
-      <Container component="main" align="center" className={classes.main}>
-        <Typography component="h2" align="center" className={classes.banner}>
-          IVCS (Instant Video Conferencing Service)
-        </Typography>
-        <MeetingLink />
-        <Carousel />
+      <Container disableGutters = {true} className={classes.fullScreen}>
+        <TopNavigation/>
+        <Container disableGutters = {true} component="main" align="center"
+          className={classes.main}>
+          <Typography variant="h2" component="h2" align="center"
+            className={classes.banner}>
+              IVCS (Instant Video Conferencing Service)
+          </Typography>
+          <MeetingLink />
+          <Carousel />
+        </Container>
       </Container>
     );
   }
 }
 
-export default withStyles(styles)(HomePage);
+export default withStyles(homeStyles)(HomePage);

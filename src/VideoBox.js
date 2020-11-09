@@ -1,14 +1,17 @@
 import React from 'react';
 import withStyles from '@material-ui/styles/withStyles';
-
-const styles = () => ({
+const boxStyles = () => ({
   videoBox: {
-    background: 'tomato',
+    background: '#303BA6',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    display: 'flex',
     padding: '5px',
-    width: '200px',
-    height: '150px',
+    width: '300px',
+    height: '225px',
     marginTop: '10px',
-    lineHeight: '150px',
+    marginBottom: '10px',
+    lineHeight: '225px',
     textAlign: 'center',
   },
 });
@@ -34,9 +37,6 @@ class VideoBox extends React.Component {
     this.state = {
       dismiss: false,
     };
-
-
-    this.audioNum = 0;
   }
 
   blackCanvas = ({width = 200, height = 150} = {}) => {
@@ -96,4 +96,4 @@ class VideoBox extends React.Component {
   }
 }
 
-export default withStyles(styles)(VideoBox);
+export default withStyles(boxStyles)(VideoBox);
