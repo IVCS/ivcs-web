@@ -11,6 +11,8 @@ const boxStyles = () => ({
     height: '225px',
     marginTop: '10px',
     marginBottom: '10px',
+    marginLeft: '20px',
+    marginRight: '20px',
     lineHeight: '225px',
     textAlign: 'center',
   },

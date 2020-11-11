@@ -9,7 +9,7 @@ const boxContainerStyles = () => ({
     display: 'flex',
     position: 'relative',
     flexFlow: 'row wrap',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     padding: 0,
     margin: '0 auto',
     height: '79.5%',
