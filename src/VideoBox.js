@@ -56,13 +56,17 @@ class VideoBox extends React.Component {
   }
 
   removeVideoTrack = () => {
-    this.videoRef.current.srcObject.getVideoTracks()[0].stop();
+    this.videoRef.current.srcObject.getVideoTracks().forEach((track) => {
+      track.stop();
+    });
     this.videoStream = new MediaStream([this.blackCanvas()]);
     this.videoRef.current.srcObject = this.videoStream;
   }
 
   removeAudioTrack = () => {
-    this.videoRef.current.srcObject.getAudioTracks()[0].stop();
+    this.videoRef.current.srcObject.getAudioTracks().forEach((track) => {
+      track.stop();
+    });
     this.audioStream = new MediaStream();
     this.audioRef.current.srcObject = this.audioStream;
   }

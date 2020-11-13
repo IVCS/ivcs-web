@@ -71,6 +71,8 @@ class MeetingRoom extends React.Component {
     super(props);
 
     this.localStream = null;
+    this.localVideo = false;
+    this.localAudio = false;
     this.localVideoTrack = null;
     this.localAudioTrack = null;
     this.videoBoxManagerRef = React.createRef();
@@ -243,14 +245,18 @@ class MeetingRoom extends React.Component {
             } else {
               // Only add stream to the connection of the last newest user
               this.sender[lastUserId] = {};
-              this.sender[lastUserId]['audioTrack'] =
+              if (this.localAudioTrack) {
+                this.sender[lastUserId]['audioTrack'] =
                             this.rtcPeerConn[lastUserId]
                                 .addTrack(this.localAudioTrack,
                                     this.localStream);
-              this.sender[lastUserId]['videoTrack'] =
+              }
+              if (this.localVideoTrack) {
+                this.sender[lastUserId]['videoTrack'] =
                             this.rtcPeerConn[lastUserId]
                                 .addTrack(this.localVideoTrack,
                                     this.localStream);
+              }
             }
           });
     });
@@ -259,7 +265,7 @@ class MeetingRoom extends React.Component {
   getLocalMedia = async () => {
     // Get a local stream, show it in our video tag and add it to be sent
     await navigator.mediaDevices
-        .getUserMedia({video: true, audio: true})
+        .getUserMedia({video: this.localVideo, audio: this.localAudio})
         .then((stream) => {
           this.localStream = stream;
           this.localVideoTrack = stream.getVideoTracks()[0];
@@ -269,6 +275,8 @@ class MeetingRoom extends React.Component {
   }
 
   joinRoom = () => this.setState({joined: true}, () => {
+    this.localVideo = true;
+    this.localAudio = true;
     this.getLocalMedia()
         .then(() => this.connectServer())
         .catch((e) => console.log(e));
@@ -292,6 +300,7 @@ class MeetingRoom extends React.Component {
   onHandleVideo = (localVideoState) => {
     // Turn on camera
     if (localVideoState === true) {
+      this.localVideo = true;
       this.getLocalMedia()
           .then(() => {
             this.videoBoxManagerRef.current
@@ -308,6 +317,8 @@ class MeetingRoom extends React.Component {
 
     // Turn off camera
     if (localVideoState === false) {
+      this.localVideo = false;
+      this.localVideoTrack.stop();
       this.videoBoxManagerRef.current.stopStreamedVideo(this.userId);
       this.userList.forEach((user) => {
         const userId = user.userId;
@@ -323,6 +334,7 @@ class MeetingRoom extends React.Component {
   onHandleAudio = (localAudioState) => {
     // Turn on microphone
     if (localAudioState === true) {
+      this.localAudio = true;
       this.getLocalMedia()
           .then(() => {
             this.userList.forEach((user) => {
@@ -337,6 +349,8 @@ class MeetingRoom extends React.Component {
 
     // Turn off microphone
     if (localAudioState === false) {
+      this.localAudio = false;
+      this.localAudioTrack.stop();
       this.videoBoxManagerRef.current.stopStreamedAudio(this.userId);
       this.userList.forEach((user) => {
         const userId = user.userId;
