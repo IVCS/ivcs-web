@@ -4,7 +4,7 @@ import Carousel from 'react-material-ui-carousel';
 import Paper from '@material-ui/core/Paper';
 import withStyles from '@material-ui/styles/withStyles';
 
-const useStyles = () => ({
+const styles = () => ({
   carousel: {
     background: 'white',
     width: '35%',
@@ -61,4 +61,4 @@ class MyCarousel extends React.Component {
   }
 }
 
-export default withStyles(useStyles)(MyCarousel);
+export default withStyles(styles)(MyCarousel);

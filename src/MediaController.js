@@ -7,8 +7,10 @@ import MicIcon from '@material-ui/icons/Mic';
 import MicOffIcon from '@material-ui/icons/MicOff';
 import CallEndIcon from '@material-ui/icons/CallEnd';
 import IconButton from '@material-ui/core/IconButton';
+import ChatIcon from '@material-ui/icons/Chat';
+import Badge from '@material-ui/core/Badge';
 
-const controllerStyles = () => ({
+const styles = () => ({
   mediaController: {
     position: 'absolute',
     bottom: 0,
@@ -41,6 +43,8 @@ class MediaController extends React.Component {
     this.state ={
       localVideo: true,
       localAudio: true,
+      showChatRoom: false,
+      numberOfNewMessages: 0,
     };
   }
 
@@ -56,33 +60,68 @@ class MediaController extends React.Component {
     this.props.onHandleAudio(reversedState);
   }
 
+  updateNumberOfNewMessages = (reset) => {
+    if (reset === true) {
+      this.setState({
+        numberOfNewMessages: 0,
+      });
+    } else {
+      this.setState({
+        numberOfNewMessages: this.state.numberOfNewMessages + 1,
+      });
+    }
+  }
+
+  openChatRoom = () => {
+    this.setState({showChatRoom: true});
+    this.updateNumberOfNewMessages(true);
+    this.props.onOpenChatRoom(true);
+  }
+
+  closeChatRoom = () => {
+    this.setState({showChatRoom: false});
+    this.updateNumberOfNewMessages(true);
+  }
+
   render() {
-    const classes = this.props.classes;
     return (
-      <Container disableGutters = {true} align="center"
-        className={classes.mediaController} >
+      <Container disableGutters="true" align="center"
+        className={this.classes.mediaController} >
 
         <IconButton onClick={this.handleVideo}
-          className={classes.controlButton}>
+          className={this.classes.controlButton}>
           {
             this.state.localVideo ? <VideocamIcon/> : <VideocamOffIcon/>
           }
         </IconButton>
 
-        <IconButton className={classes.controlButton}>
+        <IconButton className={this.classes.controlButton}>
           <CallEndIcon onClick={this.props.onCallEnd}/>
         </IconButton>
 
         <IconButton onClick={this.handleAudio}
-          className={classes.controlButton}>
+          className={this.classes.controlButton}>
           {
             this.state.localAudio ? <MicIcon/> : <MicOffIcon/>
           }
         </IconButton>
+
+        {
+          !this.state.showChatRoom ?
+              <Badge badgeContent={this.state.numberOfNewMessages} max={999}
+                color="secondary" onClick={this.openChatRoom}
+              >
+                <IconButton onClick={this.openChatRoom}
+                  className={this.classes.controlButton}
+                >
+                  <ChatIcon />
+                </IconButton>
+              </Badge> : null
+        }
 
       </Container>
     );
   }
 }
 
-export default withStyles(controllerStyles)(MediaController);
+export default withStyles(styles)(MediaController);

@@ -4,8 +4,9 @@ import Container from '@material-ui/core/Container';
 import withStyles from '@material-ui/styles/withStyles';
 import MeetingLink from './MeetingLink';
 import Carousel from './Carousel';
-import TopNavigation from './TopNavigation';
-const homeStyles = () => ({
+import NavigationBar from './NavigationBar';
+
+const styles = () => ({
   fullScreen: {
     position: 'fixed',
     margin: 0,
@@ -39,9 +40,9 @@ class HomePage extends React.Component {
   render() {
     const classes = this.props.classes;
     return (
-      <Container disableGutters = {true} className={classes.fullScreen}>
-        <TopNavigation/>
-        <Container disableGutters = {true} component="main" align="center"
+      <Container disableGutters="true" className={classes.fullScreen}>
+        <NavigationBar/>
+        <Container disableGutters="true" component="main" align="center"
           className={classes.main}>
           <Typography variant="h2" component="h2" align="center"
             className={classes.banner}>
@@ -55,4 +56,4 @@ class HomePage extends React.Component {
   }
 }
 
-export default withStyles(homeStyles)(HomePage);
+export default withStyles(styles)(HomePage);

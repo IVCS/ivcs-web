@@ -4,13 +4,13 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
-import {withStyles} from '@material-ui/styles';
+import withStyles from '@material-ui/styles/withStyles';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import Container from '@material-ui/core/Container';
 
-const navStyles = () => ({
+const styles = () => ({
   root: {
     flexGrow: 1,
     margin: 0,
@@ -28,9 +28,12 @@ const navStyles = () => ({
   },
 });
 
-class TopNavigation extends React.Component {
+class NavigationBar extends React.Component {
   constructor(props) {
     super(props);
+
+    this.classes = this.props.classes;
+
     this.state = {
       anchorEl: null,
     };
@@ -45,41 +48,29 @@ class TopNavigation extends React.Component {
   };
 
   render() {
-    const {classes} = this.props;
     return (
-      <Container disableGutters = {true} className={classes.root}>
+      <Container disableGutters="true" className={this.classes.root}>
         <AppBar position="static">
           <Toolbar variant="dense">
-            <IconButton edge="start" className={classes.menuButton}
-              color="inherit" aria-label="menu">
+            <IconButton
+              edge="start"
+              className={this.classes.menuButton}
+              color="inherit"
+            >
               <MenuIcon />
             </IconButton>
 
             <Typography variant="h6" color="inherit">
-                          Menu
+              Menu
             </Typography>
-            <div className={classes.accountButton}>
-              <IconButton
-                aria-label="account of current user"
-                aria-controls="menu-appbar"
-                aria-haspopup="true"
-                onClick={this.handleMenu}
-                color="inherit"
-              >
+
+            <div className={this.classes.accountButton}>
+              <IconButton onClick={this.handleMenu} color="inherit">
                 <AccountCircle />
               </IconButton>
               <Menu
-                id="menu-appbar"
                 anchorEl={this.state.anchorEl}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
                 keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
                 open={Boolean(this.state.anchorEl)}
                 onClose={this.handleClose}
               >
@@ -87,6 +78,7 @@ class TopNavigation extends React.Component {
                 <MenuItem onClick={this.handleClose}>My account</MenuItem>
               </Menu>
             </div>
+
           </Toolbar>
         </AppBar>
       </Container>
@@ -94,4 +86,4 @@ class TopNavigation extends React.Component {
   }
 }
 
-export default withStyles(navStyles)(TopNavigation);
+export default withStyles(styles)(NavigationBar);

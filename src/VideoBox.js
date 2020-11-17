@@ -1,6 +1,6 @@
 import React from 'react';
 import withStyles from '@material-ui/styles/withStyles';
-const boxStyles = () => ({
+const styles = () => ({
   videoBox: {
     background: '#303BA6',
     backgroundPosition: 'center',
@@ -104,4 +104,4 @@ class VideoBox extends React.Component {
   }
 }
 
-export default withStyles(boxStyles)(VideoBox);
+export default withStyles(styles)(VideoBox);

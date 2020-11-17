@@ -8,10 +8,11 @@ import faker from 'faker';
 import withStyles from '@material-ui/styles/withStyles';
 import io from 'socket.io-client';
 import MediaController from './MediaController';
-import TopNavigation from './TopNavigation';
+import TopNavigation from './NavigationBar';
 import VoiceChatOutlinedIcon from '@material-ui/icons/VoiceChatOutlined';
+import ChatRoom from './ChatRoom';
 
-const roomStyles = () => ({
+const styles = () => ({
   mainRoom: {
     position: 'fixed',
     left: '0px',
@@ -70,12 +71,16 @@ class MeetingRoom extends React.Component {
   constructor(props) {
     super(props);
 
+    this.classes = this.props.classes;
+
     this.localStream = null;
     this.localVideo = false;
     this.localAudio = false;
     this.localVideoTrack = null;
     this.localAudioTrack = null;
     this.videoBoxManagerRef = React.createRef();
+    this.chatRoomRef = React.createRef();
+    this.mediaControllerRef = React.createRef();
 
     this.roomId = window.location.pathname.substr(1);
     this.socket = null;
@@ -93,7 +98,11 @@ class MeetingRoom extends React.Component {
     };
   }
 
-  changeUsername = (e) => this.setState({username: e.target.value});
+  changeUsername = (e) => {
+    const newUsername = e.target.value;
+    this.setState({username: newUsername});
+    this.chatRoomRef.current.changeUsername(newUsername);
+  }
 
   getRemoteMedia = async () => {
     // once remote stream arrives, show it in the remote video element
@@ -215,6 +224,11 @@ class MeetingRoom extends React.Component {
 
       this.socket.on('signal from server', (data) => {
         this.receiveSignalFromServer(data);
+      });
+
+      this.socket.on('text message', (username, message) => {
+        this.mediaControllerRef.current.updateNumberOfNewMessages(false);
+        this.chatRoomRef.current.addMessage(username, message);
       });
 
       this.socket.on('user left', (userId) => {
@@ -369,52 +383,78 @@ class MeetingRoom extends React.Component {
     window.location.href = '/';
   }
 
+  onOpenChatRoom = () => {
+    this.chatRoomRef.current.openChatRoom();
+  }
+
+  onCloseChatRoom = () => {
+    this.mediaControllerRef.current.closeChatRoom();
+  }
+
+  onSendMessage = (inputMessage) => {
+    if (!this.socket) return;
+    this.socket.emit('text message', this.roomId, this.state.username,
+        inputMessage);
+  }
+
   render() {
-    const {classes} = this.props;
     return (
-      <Container className={classes.mainRoom} disableGutters = {true} >
-        <TopNavigation/>
-        <Container className={classes.meetingRoom} disableGutters = {true}>
+      <Container className={this.classes.mainRoom} disableGutters="true">
+
+        <TopNavigation />
+
+        <Container className={this.classes.meetingRoom} disableGutters="true">
+
           <Typography align="center" color="primary"
-            variant="h2" className={classes.title}>
-                        IVCS
+            variant="h2" className={this.classes.title}>
+            IVCS
           </Typography>
+
           {
               !this.state.joined ?
                  <Container align="center"
-                   className={classes.joinNowContainer}>
+                   className={this.classes.joinNowContainer}>
                    <Input
                      onChange={(e) => this.changeUsername(e)}
                      placeholder="username"
                      value={this.state.username}
-                     className={classes.inputText}
+                     className={this.classes.inputText}
                    />
                    <Button variant="contained" color="primary"
-                     className={classes.joinNowButton}
-                     startIcon = {<VoiceChatOutlinedIcon />}
+                     className={this.classes.joinNowButton}
+                     startIcon={<VoiceChatOutlinedIcon />}
                      onClick={this.joinRoom}>
-                                Join Now
+                    Join Now
                    </Button>
                  </Container> : null
           }
-          <VideoBoxManager
-            ref={this.videoBoxManagerRef}
-          />
+
+          <VideoBoxManager ref={this.videoBoxManagerRef} />
 
         </Container>
+
+        <ChatRoom
+          ref={this.chatRoomRef}
+          onSendMessage={this.onSendMessage}
+          onCloseChatRoom={this.onCloseChatRoom}
+          username={this.state.username}
+        />
+
         {
           this.state.joined ?
-
               <MediaController
+                ref={this.mediaControllerRef}
                 onHandleVideo={this.onHandleVideo}
                 onHandleAudio={this.onHandleAudio}
+                onOpenChatRoom={this.onOpenChatRoom}
                 onCallEnd={this.callEnd}
               /> :
               null
         }
+
       </Container>
     );
   }
 }
 
-export default withStyles(roomStyles)(MeetingRoom);
+export default withStyles(styles)(MeetingRoom);

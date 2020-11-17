@@ -5,7 +5,7 @@ import Container from '@material-ui/core/Container';
 import VideoCallRoundedIcon from '@material-ui/icons/VideoCallRounded';
 import withStyles from '@material-ui/styles/withStyles';
 
-const linkStyles = () => ({
+const styles = () => ({
   meetingLink: {
     background: 'white',
     width: '35%',
@@ -83,4 +83,4 @@ class MeetingLink extends React.Component {
   }
 }
 
-export default withStyles(linkStyles)(MeetingLink);
+export default withStyles(styles)(MeetingLink);
