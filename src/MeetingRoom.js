@@ -8,9 +8,10 @@ import faker from 'faker';
 import withStyles from '@material-ui/styles/withStyles';
 import io from 'socket.io-client';
 import MediaController from './MediaController';
-import TopNavigation from './NavigationBar';
+import NavigationBar from './NavigationBar';
 import VoiceChatOutlinedIcon from '@material-ui/icons/VoiceChatOutlined';
 import ChatRoom from './ChatRoom';
+import PropTypes from 'prop-types';
 
 const styles = () => ({
   mainRoom: {
@@ -80,6 +81,7 @@ class MeetingRoom extends React.Component {
     this.localAudioTrack = null;
     this.videoBoxManagerRef = React.createRef();
     this.chatRoomRef = React.createRef();
+    this.navigationBarRef = React.createRef();
     this.mediaControllerRef = React.createRef();
 
     this.roomId = window.location.pathname.substr(1);
@@ -88,6 +90,7 @@ class MeetingRoom extends React.Component {
     this.sender = [];
     this.userList = [];
     this.userId = null;
+    this.userProfilePictureUrl = null;
 
     this.state = {
       joined: false,
@@ -291,6 +294,7 @@ class MeetingRoom extends React.Component {
   joinRoom = () => this.setState({joined: true}, () => {
     this.localVideo = true;
     this.localAudio = true;
+    this.navigationBarRef.current.hideLoginIcon();
     this.getLocalMedia()
         .then(() => this.connectServer())
         .catch((e) => console.log(e));
@@ -397,11 +401,23 @@ class MeetingRoom extends React.Component {
         inputMessage);
   }
 
+  onUpdateUserProfile = (username) => {
+    this.setState({username: username});
+    this.chatRoomRef.current.changeUsername(username);
+    // this.userProfilePictureUrl = userProfilePictureUrl;
+
+    console.log('username in meeting room', username);
+    // console.log('profile pic in meeting room', userProfilePictureUrl);
+  }
+
   render() {
     return (
       <Container className={this.classes.mainRoom} disableGutters="true">
 
-        <TopNavigation />
+        <NavigationBar
+          ref={this.navigationBarRef}
+          onUpdateUserProfile={this.onUpdateUserProfile}
+        />
 
         <Container className={this.classes.meetingRoom} disableGutters="true">
 
@@ -456,5 +472,9 @@ class MeetingRoom extends React.Component {
     );
   }
 }
+
+MeetingRoom.propTypes = {
+  updateUserProfile: PropTypes.func,
+};
 
 export default withStyles(styles)(MeetingRoom);

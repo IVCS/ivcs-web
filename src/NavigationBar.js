@@ -5,10 +5,9 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import withStyles from '@material-ui/styles/withStyles';
-import AccountCircle from '@material-ui/icons/AccountCircle';
-import MenuItem from '@material-ui/core/MenuItem';
-import Menu from '@material-ui/core/Menu';
-import Container from '@material-ui/core/Container';
+import SocialLogin from './SocialLogin';
+import Avatar from '@material-ui/core/Avatar';
+import Box from '@material-ui/core/Box';
 
 const styles = () => ({
   root: {
@@ -36,7 +35,13 @@ class NavigationBar extends React.Component {
 
     this.state = {
       anchorEl: null,
+      showLoginIcon: window.location.pathname.substr(1),
+      userProfilePictureUrl: null,
     };
+  }
+
+  hideLoginIcon = () => {
+    this.setState({showLoginIcon: false});
   }
 
   handleMenu = (event) => {
@@ -47,9 +52,14 @@ class NavigationBar extends React.Component {
     this.setState({anchorEl: null});
   };
 
+  updateUserProfile = (username, userProfilePictureUrl) => {
+    this.setState({userProfilePictureUrl: userProfilePictureUrl});
+    this.props.onUpdateUserProfile(username);
+  }
+
   render() {
     return (
-      <Container disableGutters="true" className={this.classes.root}>
+      <Box className={this.classes.root}>
         <AppBar position="static">
           <Toolbar variant="dense">
             <IconButton
@@ -64,24 +74,20 @@ class NavigationBar extends React.Component {
               Menu
             </Typography>
 
-            <div className={this.classes.accountButton}>
-              <IconButton onClick={this.handleMenu} color="inherit">
-                <AccountCircle />
-              </IconButton>
-              <Menu
-                anchorEl={this.state.anchorEl}
-                keepMounted
-                open={Boolean(this.state.anchorEl)}
-                onClose={this.handleClose}
-              >
-                <MenuItem onClick={this.handleClose}>Profile</MenuItem>
-                <MenuItem onClick={this.handleClose}>My account</MenuItem>
-              </Menu>
-            </div>
+            {
+              !this.state.showLoginIcon ? null :
+              <Box className={this.classes.accountButton}>
+                {
+                  !this.state.userProfilePictureUrl ?
+                    <SocialLogin updateUserProfile={this.updateUserProfile} /> :
+                    <Avatar src={this.state.userProfilePictureUrl} />
+                }
+              </Box>
+            }
 
           </Toolbar>
         </AppBar>
-      </Container>
+      </Box>
     );
   }
 }
