@@ -53,8 +53,8 @@ const styles = () => ({
   },
 });
 
-// const signalingServerUrl = 'https://eny.li/';
-const signalingServerUrl = 'http://localhost:3001';
+const signalingServerUrl = 'https://eny.li/';
+// const signalingServerUrl = 'http://localhost:3001';
 
 const RTCIceServerConfig = {
   iceServers: [
@@ -77,6 +77,7 @@ class MeetingRoom extends React.Component {
     this.localStream = null;
     this.localVideo = false;
     this.localAudio = false;
+    this.localScreen = false;
     this.localVideoTrack = null;
     this.localAudioTrack = null;
     this.videoBoxManagerRef = React.createRef();
@@ -279,6 +280,18 @@ class MeetingRoom extends React.Component {
     });
   }
 
+  getDisplayMedia = async () => {
+    await navigator.mediaDevices.getDisplayMedia({video: true})
+        .then((stream) => {
+          this.localVideoTrack = stream.getVideoTracks()[0];
+          this.localVideoTrack.onended = () => {
+            this.onHandleVideo(false);
+            this.mediaControllerRef.current.changeToStopScreenShareIcon();
+          };
+        })
+        .catch((e) => console.log(e));
+  }
+
   getLocalMedia = async () => {
     // Get a local stream, show it in our video tag and add it to be sent
     await navigator.mediaDevices
@@ -315,11 +328,35 @@ class MeetingRoom extends React.Component {
     });
   }
 
+  removeTrackOfLocalStream = (kind) => {
+    this.localStream = new MediaStream();
+    if (kind === 'video') {
+      this.localVideo = false;
+      this.localScreen = false;
+      this.localVideoTrack = null;
+      if (this.localAudioTrack) {
+        this.localStream.addTrack(this.localAudioTrack);
+      }
+    }
+    if (kind === 'audio') {
+      this.localAudio = false;
+      this.localAudioTrack = null;
+      if (this.localVideoTrack) {
+        this.localStream.addTrack(this.localVideoTrack);
+      }
+    }
+  }
+
   onHandleVideo = (localVideoState) => {
-    // Turn on camera
     if (localVideoState === true) {
-      this.localVideo = true;
-      this.getLocalMedia()
+      let getMedia = async () => {};
+      if (this.localScreen === false) {
+        this.localVideo = true;
+        getMedia = this.getLocalMedia;
+      } else {
+        getMedia = this.getDisplayMedia;
+      }
+      getMedia()
           .then(() => {
             this.videoBoxManagerRef.current
                 .handleTrack(this.userId, this.localVideoTrack);
@@ -330,13 +367,13 @@ class MeetingRoom extends React.Component {
                   .addTrack(this.localVideoTrack, this.localStream);
             });
           })
-          .catch((e) => console.log(e));
+          .catch((e) => {
+            console.log(e);
+            if (this.localScreen) this.localScreen = false;
+            this.mediaControllerRef.current.changeToStopScreenShareIcon();
+          });
     }
-
-    // Turn off camera
     if (localVideoState === false) {
-      this.localVideo = false;
-      this.localVideoTrack.stop();
       this.videoBoxManagerRef.current.stopStreamedVideo(this.userId);
       this.userList.forEach((user) => {
         const userId = user.userId;
@@ -344,6 +381,7 @@ class MeetingRoom extends React.Component {
         this.rtcPeerConn[userId]
             .removeTrack(this.sender[userId]['videoTrack']);
       });
+      this.removeTrackOfLocalStream('video');
     }
 
     this.resendSdpSignalToServer();
@@ -367,8 +405,6 @@ class MeetingRoom extends React.Component {
 
     // Turn off microphone
     if (localAudioState === false) {
-      this.localAudio = false;
-      this.localAudioTrack.stop();
       this.videoBoxManagerRef.current.stopStreamedAudio(this.userId);
       this.userList.forEach((user) => {
         const userId = user.userId;
@@ -377,9 +413,38 @@ class MeetingRoom extends React.Component {
         this.rtcPeerConn[userId]
             .removeTrack(this.sender[userId]['audioTrack']);
       });
+      this.removeTrackOfLocalStream('audio');
     }
 
     this.resendSdpSignalToServer();
+  }
+
+  onHandleCamera = (localCameraState) => {
+    if (localCameraState === true) {
+      if (this.localScreen === true) {
+        this.onHandleVideo(false);
+        this.mediaControllerRef.current.changeToStopScreenShareIcon();
+      }
+      this.localVideo = true;
+      this.onHandleVideo(true);
+    }
+    if (localCameraState === false) {
+      this.onHandleVideo(false);
+    }
+  }
+
+  onHandleScreen = (localScreenState) => {
+    if (localScreenState === true) {
+      if (this.localVideo === true) {
+        this.onHandleVideo(false);
+        this.mediaControllerRef.current.changeToVideocamOffIcon();
+      }
+      this.localScreen = true;
+      this.onHandleVideo(true);
+    }
+    if (localScreenState === false) {
+      this.onHandleVideo(false);
+    }
   }
 
   callEnd = () => {
@@ -460,8 +525,9 @@ class MeetingRoom extends React.Component {
           this.state.joined ?
               <MediaController
                 ref={this.mediaControllerRef}
-                onHandleVideo={this.onHandleVideo}
+                onHandleVideo={this.onHandleCamera}
                 onHandleAudio={this.onHandleAudio}
+                onHandleScreen={this.onHandleScreen}
                 onOpenChatRoom={this.onOpenChatRoom}
                 onCallEnd={this.callEnd}
               /> :

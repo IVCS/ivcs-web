@@ -55,7 +55,7 @@ class SocialLogin extends React.Component {
   render() {
     return (
       <GoogleLogin
-        clientId="1090486960272-o21la0a84u2i5fl7kecm2lvdebb0p7dr.apps.googleusercontent.com"
+        clientId="1090486960272-7uvbr814khpldaa5d5m0kle52btk35op.apps.googleusercontent.com"
         buttonText="Login with Google"
         onSuccess={this.responseGoogle}
         onFailure={this.responseGoogle}

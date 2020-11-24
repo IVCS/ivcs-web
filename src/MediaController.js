@@ -9,6 +9,8 @@ import CallEndIcon from '@material-ui/icons/CallEnd';
 import IconButton from '@material-ui/core/IconButton';
 import ChatIcon from '@material-ui/icons/Chat';
 import Badge from '@material-ui/core/Badge';
+import ScreenShareIcon from '@material-ui/icons/ScreenShare';
+import StopScreenShareIcon from '@material-ui/icons/StopScreenShare';
 
 const styles = () => ({
   mediaController: {
@@ -45,7 +47,22 @@ class MediaController extends React.Component {
       localAudio: true,
       showChatRoom: false,
       numberOfNewMessages: 0,
+      localScreen: false,
     };
+  }
+
+  handleScreen = () => {
+    const reversedState = !this.state.localScreen;
+    this.setState({localScreen: reversedState});
+    this.props.onHandleScreen(reversedState);
+  }
+
+  changeToVideocamOffIcon = () => {
+    this.setState({localVideo: false});
+  }
+
+  changeToStopScreenShareIcon = () => {
+    this.setState({localScreen: false});
   }
 
   handleVideo = () => {
@@ -103,6 +120,15 @@ class MediaController extends React.Component {
           className={this.classes.controlButton}>
           {
             this.state.localAudio ? <MicIcon/> : <MicOffIcon/>
+          }
+        </IconButton>
+
+        <IconButton onClick={this.handleScreen}
+          className={this.classes.controlButton}>
+          {
+            this.state.localScreen ?
+                <ScreenShareIcon /> :
+                <StopScreenShareIcon />
           }
         </IconButton>
 
