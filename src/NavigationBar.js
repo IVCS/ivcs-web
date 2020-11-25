@@ -12,11 +12,13 @@ import Box from '@material-ui/core/Box';
 const styles = () => ({
   root: {
     flexGrow: 1,
+    top: 0,
     margin: 0,
     width: '100%',
-    height: '10%',
     maxWidth: '100%',
-    disableGutters: 'true',
+    backgroundColor: 'transparent',
+    boxShadow: 'inset 0px 3px 5px rgba(255,255,255,0.5),' +
+        ' 0px 0px 10px rgba(0,0,0,0.15)',
   },
   menuButton: {
     left: 0,
@@ -60,18 +62,18 @@ class NavigationBar extends React.Component {
   render() {
     return (
       <Box className={this.classes.root}>
-        <AppBar position="static">
+        <AppBar position="static" className={this.classes.root}>
           <Toolbar variant="dense">
             <IconButton
               edge="start"
               className={this.classes.menuButton}
-              color="inherit"
+              color="primary"
             >
               <MenuIcon />
             </IconButton>
 
-            <Typography variant="h6" color="inherit">
-              Menu
+            <Typography variant="h6" color="primary">
+              IVCS
             </Typography>
 
             {
