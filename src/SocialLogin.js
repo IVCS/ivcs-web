@@ -20,8 +20,6 @@ class SocialLogin extends React.Component {
     this.profilePictureUrl = null;
     this.profilePictureDataUrl = null;
     this.googleId = null;
-
-    this.socialLoginContext = React.createContext();
   }
 
   toDataUrl = (url, callback) => {

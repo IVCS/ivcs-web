@@ -1,8 +1,9 @@
 import React from 'react';
 import withStyles from '@material-ui/styles/withStyles';
+
 const styles = () => ({
   videoBox: {
-    background: '#303BA6',
+    background: '#323da7',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
     display: 'flex',

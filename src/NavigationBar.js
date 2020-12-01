@@ -10,20 +10,32 @@ import Avatar from '@material-ui/core/Avatar';
 import Box from '@material-ui/core/Box';
 
 const styles = () => ({
+  head: {
+    position: 'relative',
+    display: 'block',
+    minWidth: '320px',
+    width: '100%',
+  },
   root: {
     flexGrow: 1,
-    top: 0,
-    margin: 0,
+    flexShrink: 0,
+    flexBasis: 'auto',
+    height: '64px',
+    position: 'relative',
+    padding: '8px',
+    display: 'flex',
+    boxSizing: 'border-box',
     width: '100%',
-    maxWidth: '100%',
     backgroundColor: 'transparent',
     boxShadow: 'inset 0px 3px 5px rgba(255,255,255,0.5),' +
         ' 0px 0px 10px rgba(0,0,0,0.15)',
   },
   menuButton: {
+    zIndex: 999,
     left: 0,
   },
   accountButton: {
+    zIndex: 999,
     position: 'absolute',
     right: 0,
   },
@@ -36,7 +48,6 @@ class NavigationBar extends React.Component {
     this.classes = this.props.classes;
 
     this.state = {
-      anchorEl: null,
       showLoginIcon: window.location.pathname.substr(1),
       userProfilePictureUrl: null,
     };
@@ -46,14 +57,6 @@ class NavigationBar extends React.Component {
     this.setState({showLoginIcon: false});
   }
 
-  handleMenu = (event) => {
-    this.setState({anchorEl: event.currentTarget});
-  };
-
-  handleClose = () => {
-    this.setState({anchorEl: null});
-  };
-
   updateUserProfile = (username, userProfilePictureUrl) => {
     this.setState({userProfilePictureUrl: userProfilePictureUrl});
     this.props.onUpdateUserProfile(username);
@@ -61,15 +64,19 @@ class NavigationBar extends React.Component {
 
   render() {
     return (
-      <Box className={this.classes.root}>
+      <Box className={this.classes.head}>
+
         <AppBar position="static" className={this.classes.root}>
+
           <Toolbar variant="dense">
             <IconButton
               edge="start"
               className={this.classes.menuButton}
               color="primary"
             >
+
               <MenuIcon />
+
             </IconButton>
 
             <Typography variant="h6" color="primary">
@@ -88,7 +95,9 @@ class NavigationBar extends React.Component {
             }
 
           </Toolbar>
+
         </AppBar>
+
       </Box>
     );
   }

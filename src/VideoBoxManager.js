@@ -1,8 +1,8 @@
 import React from 'react';
+import Box from '@material-ui/core/Box';
 import withStyles from '@material-ui/styles/withStyles';
 import PropTypes from 'prop-types';
 import VideoBox from './VideoBox';
-import Box from '@material-ui/core/Box';
 
 const styles = () => ({
   videoBoxManager: {

@@ -3,8 +3,9 @@ import Input from '@material-ui/core/Input';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
-import VideoBoxManager from './VideoBoxManager';
+import Box from '@material-ui/core/Box';
 import faker from 'faker';
+import VideoBoxManager from './VideoBoxManager';
 import withStyles from '@material-ui/styles/withStyles';
 import io from 'socket.io-client';
 import MediaController from './MediaController';
@@ -12,7 +13,6 @@ import NavigationBar from './NavigationBar';
 import VoiceChatOutlinedIcon from '@material-ui/icons/VoiceChatOutlined';
 import ChatRoom from './ChatRoom';
 import PropTypes from 'prop-types';
-import Box from '@material-ui/core/Box';
 
 const styles = () => ({
   mainRoom: {

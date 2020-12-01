@@ -1,4 +1,6 @@
 import React from 'react';
+import Typography from '@material-ui/core/Typography';
+import Box from '@material-ui/core/Box';
 import withStyles from '@material-ui/styles/withStyles';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -8,8 +10,6 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import Input from '@material-ui/core/Input';
 import DOMPurify from 'dompurify';
-import Typography from '@material-ui/core/Typography';
-import Box from '@material-ui/core/Box';
 
 const styles = () => ({
   dialogContent: {
@@ -96,6 +96,7 @@ class ChatRoom extends React.Component {
         <DialogTitle>Chat room</DialogTitle>
 
         <DialogContent className={this.classes.dialogContent}>
+
           <DialogContentText>
             {
               this.state.totalMessages.length > 0 ?
@@ -112,19 +113,24 @@ class ChatRoom extends React.Component {
                   <Typography>No message yet</Typography>
             }
           </DialogContentText>
+
           <Box ref={this.messagesEndRef} />
+
         </DialogContent>
 
         <DialogActions className={this.classes.dialogActions}>
+
           <Input autoFocus="true" fullWidth="true" inputRef={this.inputRef}
             onChange={(e) => this.handleMessage(e)}
             placeholder="Message" value={this.state.inputMessage}
             onKeyPress={(e) => this.pressEnterToSendMessage(e)}
           />
+
           <Button color="primary" variant="contained"
             onClick={this.sendMessage}>
               Send
           </Button>
+
         </DialogActions>
 
       </Dialog>

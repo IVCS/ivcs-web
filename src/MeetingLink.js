@@ -1,22 +1,13 @@
 import React from 'react';
 import Button from '@material-ui/core/Button';
-import Container from '@material-ui/core/Container';
 import VideoCallRoundedIcon from '@material-ui/icons/VideoCallRounded';
 import withStyles from '@material-ui/styles/withStyles';
 
 const styles = () => ({
-  meetingLink: {
-    position: 'absolute',
-    width: '30%',
-    height: 'auto',
-    margin: '5% 5%',
-    top: '60%',
-    right: '55%',
-    float: 'left',
-    borderRadius: '15px',
-    backgroundColor: 'transparent',
-    boxShadow: 'inset 0px 3px 5px rgba(255,255,255,0.5),' +
-        ' 0px 0px 10px rgba(0,0,0,0.15)',
+  buttonContainer: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignSelf: 'flex-start',
   },
   meetingLinkTitle: {
     margin: 0,
@@ -25,6 +16,7 @@ const styles = () => ({
   button: {
     position: 'relative',
     margin: '10px',
+    zIndex: '999',
   },
 });
 
@@ -69,17 +61,13 @@ class MeetingLink extends React.Component {
 
   render() {
     return (
-      <Container className={this.classes.meetingLink}>
-
-        <Button variant="contained" color="primary"
-          className={this.classes.button}
-          startIcon = {<VideoCallRoundedIcon />}
-          onClick={this.johnMeeting}
-        >
+      <Button variant="contained" color="primary"
+        className={this.classes.button}
+        startIcon = {<VideoCallRoundedIcon />}
+        onClick={this.johnMeeting}
+      >
           Start a meeting
-        </Button>
-
-      </Container>
+      </Button>
     );
   }
 }

@@ -7,23 +7,32 @@ import Carousel2 from './assets/img/carousel02.jpg';
 
 const styles = () => ({
   carousel: {
-    position: 'absolute',
-    display: 'block',
-    width: '35%',
-    height: '50%',
-    margin: '5% 5%',
-    left: '45%',
-    top: '15%',
-    float: 'left',
+    display: 'inline-flex',
+    width: 'auto',
+    height: '100%',
     borderRadius: '15px',
     backgroundColor: 'transparent',
     boxShadow: 'inset 0px 3px 5px rgba(255,255,255,0.5),' +
         ' 0px 0px 10px rgba(0,0,0,0.15)',
   },
-  paperContainer: {
-    position: 'absolute',
+  paper: {
     width: '100%',
-    height: '90px',
+    height: '100%',
+    objectFit: 'fill',
+    borderRadius: '15px',
+    backgroundColor: 'transparent',
+    boxShadow: 'inset 0px 3px 5px rgba(255,255,255,0.5),' +
+        ' 0px 0px 10px rgba(0,0,0,0.15)',
+  },
+  img: {
+    width: '450px',
+    height: '280px',
+    objectFit: 'fill',
+    ['@media screen and (max-aspect-ratio: 1/2),' +
+    ' only screen and (max-width: 35rem)']: {
+      width: '360px',
+      height: '280px',
+    },
   },
 });
 
@@ -38,15 +47,18 @@ class MyCarousel extends React.Component {
 
   item = (props) => {
     return (
-      <Paper>
-        <img style={{width: '100%'}} alt="true" src={props.item.image}/>
+      <Paper className={this.classes.img}>
+        <img className={this.classes.paper} alt="true" src={props.item.image}/>
       </Paper>
     );
   }
 
   render() {
     return (
-      <Carousel className={this.classes.carousel}>
+      <Carousel
+        indicators={false}
+        fullHeightHover={false}
+        className={this.classes.carousel}>
         {
           this.items.map((item, i) => <this.item key={i} item={item}/>)
         }
