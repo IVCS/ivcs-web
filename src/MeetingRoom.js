@@ -12,6 +12,7 @@ import NavigationBar from './NavigationBar';
 import VoiceChatOutlinedIcon from '@material-ui/icons/VoiceChatOutlined';
 import ChatRoom from './ChatRoom';
 import PropTypes from 'prop-types';
+import Box from '@material-ui/core/Box';
 
 const styles = () => ({
   mainRoom: {
@@ -34,14 +35,11 @@ const styles = () => ({
     maxHeight: '100%',
     overflow: 'hidden',
   },
-  title: {
-    height: '20%',
-  },
   joinNowContainer: {
     position: 'relative',
     background: '#FFFFFF',
     width: '35%',
-    height: '20%',
+    height: '30%',
   },
   joinNowButton: {
     position: 'relative',
@@ -53,8 +51,8 @@ const styles = () => ({
   },
 });
 
-const signalingServerUrl = 'https://eny.li/';
-// const signalingServerUrl = 'http://localhost:3001';
+// const signalingServerUrl = 'https://eny.li/';
+const signalingServerUrl = 'http://localhost:3001';
 
 const RTCIceServerConfig = {
   iceServers: [
@@ -94,6 +92,7 @@ class MeetingRoom extends React.Component {
     this.userProfilePictureUrl = null;
 
     this.state = {
+      permissionDenied: false,
       joined: false,
       video: false,
       audio: false,
@@ -304,14 +303,22 @@ class MeetingRoom extends React.Component {
         .catch((e) => console.log(e));
   }
 
-  joinRoom = () => this.setState({joined: true}, () => {
+  joinRoom = () => {
     this.localVideo = true;
     this.localAudio = true;
-    this.navigationBarRef.current.hideLoginIcon();
     this.getLocalMedia()
-        .then(() => this.connectServer())
+        .then(() => {
+          if (!this.localStream) {
+            this.setState({permissionDenied: true});
+          } else {
+            this.setState({permissionDenied: false});
+            this.setState({joined: true});
+            this.navigationBarRef.current.hideLoginIcon();
+            this.connectServer();
+          }
+        })
         .catch((e) => console.log(e));
-  });
+  }
 
   resendSdpSignalToServer = () => {
     this.userList.forEach((user) => {
@@ -477,42 +484,45 @@ class MeetingRoom extends React.Component {
 
   render() {
     return (
-      <Container className={this.classes.mainRoom} disableGutters="true">
+      <Box className={this.classes.mainRoom}>
 
         <NavigationBar
           ref={this.navigationBarRef}
           onUpdateUserProfile={this.onUpdateUserProfile}
         />
 
-        <Container className={this.classes.meetingRoom} disableGutters="true">
+        {
+          this.state.permissionDenied ?
+              <Typography align="center" color="primary" variant="h2">
+                <br /><br />IVCS needs to use your microphone and camera.<br />
+                <br />Select Allow when your browser asks for permissions.<br />
+              </Typography> : null
+        }
 
-          <Typography align="center" color="primary"
-            variant="h2" className={this.classes.title}>
-            IVCS
-          </Typography>
-
+        <Box className={this.classes.meetingRoom}>
           {
-              !this.state.joined ?
-                 <Container align="center"
-                   className={this.classes.joinNowContainer}>
-                   <Input
-                     onChange={(e) => this.changeUsername(e)}
-                     placeholder="username"
-                     value={this.state.username}
-                     className={this.classes.inputText}
-                   />
-                   <Button variant="contained" color="primary"
-                     className={this.classes.joinNowButton}
-                     startIcon={<VoiceChatOutlinedIcon />}
-                     onClick={this.joinRoom}>
+            this.state.joined || this.state.permissionDenied ? null :
+                <Container align="center"
+                  className={this.classes.joinNowContainer}>
+                  <Typography align="center" color="primary" variant="h2">
+                    IVCS
+                  </Typography>
+                  <Input
+                    onChange={(e) => this.changeUsername(e)}
+                    placeholder="username"
+                    value={this.state.username}
+                    className={this.classes.inputText}
+                  />
+                  <Button variant="contained" color="primary"
+                    className={this.classes.joinNowButton}
+                    startIcon={<VoiceChatOutlinedIcon />}
+                    onClick={this.joinRoom}>
                     Join Now
-                   </Button>
-                 </Container> : null
+                  </Button>
+                </Container>
           }
-
           <VideoBoxManager ref={this.videoBoxManagerRef} />
-
-        </Container>
+        </Box>
 
         <ChatRoom
           ref={this.chatRoomRef}
@@ -534,7 +544,7 @@ class MeetingRoom extends React.Component {
               null
         }
 
-      </Container>
+      </Box>
     );
   }
 }
