@@ -1,8 +1,8 @@
 import React from 'react';
 import withStyles from '@material-ui/styles/withStyles';
 import PropTypes from 'prop-types';
-import Container from '@material-ui/core/Container';
 import VideoBox from './VideoBox';
+import Box from '@material-ui/core/Box';
 
 const styles = () => ({
   videoBoxManager: {
@@ -11,7 +11,7 @@ const styles = () => ({
     flexFlow: 'row wrap',
     justifyContent: 'center',
     padding: 0,
-    margin: '0 auto',
+    margin: '100px auto',
     height: '79.5%',
     listStyle: 'none',
     textAlign: 'center',
@@ -51,6 +51,8 @@ class VideoBoxManager extends React.Component {
   }
 
   addVideoBox = (userId) => {
+    if (this.videoBoxRefs[userId]) return;
+
     this.videoBoxRefs[userId] = React.createRef();
 
     this.videoBoxes.push(<VideoBox
@@ -70,12 +72,11 @@ class VideoBoxManager extends React.Component {
 
   render() {
     return (
-      <Container disableGutters = "true"
-        className={this.classes.videoBoxManager}>
+      <Box className={this.classes.videoBoxManager}>
         {
           this.state.addVideoBox ? this.videoBoxes : null
         }
-      </Container>
+      </Box>
     );
   }
 }

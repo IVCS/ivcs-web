@@ -41,6 +41,10 @@ const styles = () => ({
     width: '35%',
     height: '30%',
   },
+  title: {
+    marginTop: '50px',
+    marginBottom: '50px',
+  },
   joinNowButton: {
     position: 'relative',
     margin: 'auto',
@@ -108,10 +112,11 @@ class MeetingRoom extends React.Component {
   }
 
   getRemoteMedia = async () => {
-    // once remote stream arrives, show it in the remote video element
+    // Once remote stream arrives, show it in the remote video element
     this.userList.forEach((user) => {
       const userId = user.userId;
       if (userId === this.userId) return;
+      this.videoBoxManagerRef.current.addVideoBox(userId);
       this.rtcPeerConn[userId].ontrack = (event) => {
         this.videoBoxManagerRef.current.handleTrack(userId, event.track);
 
@@ -504,9 +509,11 @@ class MeetingRoom extends React.Component {
             this.state.joined || this.state.permissionDenied ? null :
                 <Container align="center"
                   className={this.classes.joinNowContainer}>
-                  <Typography align="center" color="primary" variant="h2">
-                    IVCS
-                  </Typography>
+                  <Box className={this.classes.title}>
+                    <Typography align="center" color="primary" variant="h2">
+                      IVCS
+                    </Typography>
+                  </Box>
                   <Input
                     onChange={(e) => this.changeUsername(e)}
                     placeholder="username"

@@ -41,6 +41,10 @@ class VideoBox extends React.Component {
     };
   }
 
+  componentDidMount() {
+    this.turnOnBlackScreen();
+  }
+
   blackCanvas = ({width = 200, height = 150} = {}) => {
     const canvas = Object.assign(document.createElement('canvas'),
         {width, height});
@@ -49,30 +53,43 @@ class VideoBox extends React.Component {
     return Object.assign(captureStream.getVideoTracks()[0], {enabled: false});
   }
 
+  turnOnBlackScreen = () => {
+    this.videoStream = new MediaStream([this.blackCanvas()]);
+    this.videoRef.current.srcObject = this.videoStream;
+  }
+
   dismiss = () => {
     this.removeVideoTrack();
     this.removeAudioTrack();
     this.setState({dismiss: true});
   }
 
-  removeVideoTrack = () => {
+  stopVideoTrack = () => {
     this.videoRef.current.srcObject.getVideoTracks().forEach((track) => {
       track.stop();
     });
-    this.videoStream = new MediaStream([this.blackCanvas()]);
-    this.videoRef.current.srcObject = this.videoStream;
   }
 
-  removeAudioTrack = () => {
+  stopAudioTrack = () => {
     this.videoRef.current.srcObject.getAudioTracks().forEach((track) => {
       track.stop();
     });
+  }
+
+  removeVideoTrack = () => {
+    this.stopVideoTrack();
+    this.turnOnBlackScreen();
+  }
+
+  removeAudioTrack = () => {
+    this.stopAudioTrack();
     this.audioStream = new MediaStream();
     this.audioRef.current.srcObject = this.audioStream;
   }
 
   addTrack = (track) => {
     if (track.kind === 'video') {
+      this.stopVideoTrack();
       this.videoStream = new MediaStream();
       this.videoStream.addTrack(track);
       this.videoRef.current.srcObject = this.videoStream;
@@ -80,6 +97,7 @@ class VideoBox extends React.Component {
     }
 
     if (track.kind === 'audio') {
+      this.stopAudioTrack();
       this.audioStream = new MediaStream();
       this.audioStream.addTrack(track);
       this.audioRef.current.srcObject = this.audioStream;
